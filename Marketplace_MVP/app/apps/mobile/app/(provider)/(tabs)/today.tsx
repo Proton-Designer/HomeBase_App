@@ -3,14 +3,12 @@ import { ScrollView, Text, View, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
-import { MapPin, ChevronRight, TrendingUp } from 'lucide-react-native';
+import { MapPin, TrendingUp } from 'lucide-react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Section } from '../../../components/ui/Section';
-import { Pill } from '../../../components/ui/Pill';
-import { TrustScoreDisplay } from '../../../components/shared';
-import { EmptyState } from '../../../components/shared';
+import { TrustScoreDisplay , EmptyState , QueryErrorState } from '../../../components/shared';
 import { ProviderCheckIn } from '../../../components/checkin/ProviderCheckIn';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { enterStaggered } from '../../../lib/motion';
@@ -18,17 +16,9 @@ import { useAuthStore } from '../../../stores/authStore';
 import * as jobsApi from '../../../lib/api/jobs';
 import * as providersApi from '../../../lib/api/providers';
 import type { TextStyle } from 'react-native';
-import type { Job } from '../../../lib/types';
+import type { Job, ServiceType } from '../../../lib/types';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import { colors, textStyles, numericTabular, fonts } from '../../../tokens';
-
-const SERVICE_LABEL: Record<string, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-};
 
 function jobCountWord(n: number): string {
   if (n === 0) return 'No jobs';
@@ -119,7 +109,7 @@ function PressableJobRow({
               lineHeight: 22,
             }}
           >
-            {SERVICE_LABEL[job.serviceType] ?? job.serviceType}
+            {SERVICE_LABEL[job.serviceType as ServiceType] ?? job.serviceType}
           </Text>
           {(job.street || job.neighborhood) ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -178,14 +168,14 @@ export default function ProviderTodayScreen() {
   const today = new Date();
 
   // Fetch today's jobs
-  const { data: allJobs = [], isLoading: jobsLoading } = useQuery<Job[]>({
+  const { data: allJobs = [], isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery<Job[]>({
     queryKey: ['provider', 'jobs', providerId],
     queryFn: () => jobsApi.listForProvider(providerId ?? ''),
     enabled: !!providerId,
   });
 
   // Map API Job → TodayJob shape
-  const todayJobs: TodayJob[] = (allJobs as unknown as Array<Record<string, unknown>>)
+  const todayJobs: TodayJob[] = (allJobs as unknown as Record<string, unknown>[])
     .filter((j) => {
       const d = new Date(j.scheduledAt as string);
       return (
@@ -353,9 +343,11 @@ export default function ProviderTodayScreen() {
           color: colors.textPrimary,
         }}
       >
-        Today's jobs
+        Today&apos;s jobs
       </Text>
-      {jobsLoading ? (
+      {jobsError ? (
+        <QueryErrorState onRetry={() => refetchJobs()} />
+      ) : jobsLoading ? (
         <Card>
           <Text style={{ ...textStyles['body-md'], color: colors.textSecondary, textAlign: 'center' }}>
             Loading…
@@ -411,7 +403,7 @@ export default function ProviderTodayScreen() {
         </Pressable>
       </View>
       {/* Upcoming rows come from the schedule — no hardcoded data */}
-      {(allJobs as unknown as Array<Record<string, unknown>>).filter((j) => {
+      {(allJobs as unknown as Record<string, unknown>[]).filter((j) => {
         const d = new Date(j.scheduledAt as string);
         return d > today;
       }).length === 0 ? (

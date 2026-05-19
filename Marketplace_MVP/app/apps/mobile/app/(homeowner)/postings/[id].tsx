@@ -7,38 +7,25 @@ import { format, formatDistanceToNowStrict } from 'date-fns';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Pill } from '../../../components/ui/Pill';
-import { Eyebrow } from '../../../components/ui/Eyebrow';
+import { QueryErrorState } from '../../../components/shared';
 import { useQuery } from '@tanstack/react-query';
 import * as api from '../../../lib/api';
 import { useAuthStore } from '../../../stores/authStore';
+import { SERVICE_LABELS } from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-import type { ServiceType } from '../../../lib/types';
-
-const SERVICE_LABELS: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
 
 export default function PostingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const pendingSetup = useAuthStore((s) => s.pendingHomeownerSetup);
 
-  const { data: posting, isLoading } = useQuery({
+  const { data: posting, isLoading, isError, refetch } = useQuery({
     queryKey: ['postings', 'detail', id],
     queryFn: () => api.postings.get(id ?? ''),
     enabled: !!id,
   });
 
-  const { data: matchedProvider = null } = useQuery({
+  const { data: matchedProvider = null, isError: matchedProviderError, refetch: refetchMatchedProvider } = useQuery({
     queryKey: ['providers', 'detail', posting?.matchedProviderId],
     queryFn: () => api.providers.detail(posting!.matchedProviderId!),
     enabled: !!posting?.matchedProviderId,
@@ -53,6 +40,14 @@ export default function PostingDetailScreen() {
             Loading…
           </Text>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+        <QueryErrorState onRetry={() => refetch()} />
       </SafeAreaView>
     );
   }
@@ -193,7 +188,9 @@ export default function PostingDetailScreen() {
           </Card>
         ) : null}
 
-        {posting.status === 'matched' && matchedProvider ? (
+        {posting.status === 'matched' && matchedProviderError ? (
+          <QueryErrorState onRetry={() => refetchMatchedProvider()} />
+        ) : posting.status === 'matched' && matchedProvider ? (
           <Card>
             <Text style={{ ...textStyles.label, color: colors.textTertiary }}>Matched with</Text>
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginTop: 8 }}>

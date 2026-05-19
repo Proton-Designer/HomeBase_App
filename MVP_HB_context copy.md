@@ -371,7 +371,7 @@ This section tracks what is actually built in the repo vs. what still needs oper
 
 ### 16.1 Monorepo & app skeletons — **DONE**
 - Turborepo monorepo at `Marketplace_MVP/app/` with two workspaces:
-  - `apps/mobile` — Expo SDK 51 (managed workflow) + Expo Router 3.5, single codebase for homeowner + provider + tech roles
+  - `apps/mobile` — Expo SDK 54 (managed workflow) + Expo Router 6, single codebase for homeowner + provider + tech roles
   - `apps/admin` — Next.js 14 App Router admin dashboard (internal ops only)
 - Design system (`tokens/`, base `components/ui/`, NativeWind 4 config) wired to FRONTEND_GUIDE spec
 - All 21 mobile screens scaffolded (homeowner browse/book/jobs/inbox/profile; provider onboarding/dashboard/schedule/earnings/profile; tech today; auth)

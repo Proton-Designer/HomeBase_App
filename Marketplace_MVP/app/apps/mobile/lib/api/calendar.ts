@@ -6,5 +6,6 @@ export async function connect(): Promise<{ authorizeUrl: string }> {
     { body: {} }
   );
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('calendar-connect returned no data');
+  return data;
 }

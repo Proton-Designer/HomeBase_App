@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Text, View, Pressable, Image, Platform, type TextStyle } from 'react-native';
+import { Text, View, Pressable, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
@@ -9,31 +9,18 @@ import { Card } from '../../../components/ui/Card';
 import { Section } from '../../../components/ui/Section';
 import { Pill, type PillTone } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { EmptyState, SkeletonLoader } from '../../../components/shared';
-import * as jobsApi from '../../../lib/api/jobs';
+import { EmptyState, SkeletonLoader, QueryErrorState } from '../../../components/shared';
 import * as subscriptionsApi from '../../../lib/api/subscriptions';
 import { useAuthStore } from '../../../stores/authStore';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { enterStaggered, usePress } from '../../../lib/motion';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import type { Job, JobStatus, ServiceType } from '../../../lib/types';
 
 type Segment = 'active' | 'subscriptions' | 'history';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-const SERVICE_LABEL: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
 
 const STATUS_TONE: Record<JobStatus, { tone: PillTone; label: string }> = {
   booked: { tone: 'neutral', label: 'Booked' },
@@ -77,7 +64,7 @@ export default function JobsScreen() {
   const [segment, setSegment] = useState<Segment>('active');
   const isDesktop = useBreakpoint() === 'desktop';
 
-  const { data: allJobs = [], isLoading: jobsLoading } = useQuery({
+  const { data: allJobs = [], isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
     queryKey: ['jobs', 'homeowner', homeownerId],
     queryFn: async (): Promise<Job[]> => {
       const { supabase } = await import('../../../lib/supabase');
@@ -92,7 +79,7 @@ export default function JobsScreen() {
         .eq('homeowner_id', homeownerId ?? '')
         .order('scheduled_at', { ascending: false });
       if (error) throw error;
-      return ((data ?? []) as unknown as Array<Record<string, unknown>>).map((row) => {
+      return ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => {
         const prov = (row.providers as { display_name?: string | null; avatar_url?: string | null } | null) ?? null;
         const booking = (row.bookings as { addresses?: { street?: string | null; unit?: string | null; city?: string | null; state?: string | null; zip?: string | null; neighborhood?: string | null } | null } | null) ?? null;
         const addr = booking?.addresses ?? null;
@@ -121,7 +108,7 @@ export default function JobsScreen() {
     staleTime: 60_000,
   });
 
-  const { data: subscriptions = [], isLoading: subsLoading } = useQuery({
+  const { data: subscriptions = [], isLoading: subsLoading, isError: subsError, refetch: refetchSubs } = useQuery({
     queryKey: ['subscriptions', homeownerId],
     queryFn: () => subscriptionsApi.listForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,
@@ -223,6 +210,8 @@ export default function JobsScreen() {
           {segment === 'active' ? (
             jobsLoading ? (
               <JobListSkeleton />
+            ) : jobsError ? (
+              <QueryErrorState onRetry={() => refetchJobs()} />
             ) : active.length === 0 ? (
               <EmptyState
                 heading="No jobs yet"
@@ -238,6 +227,8 @@ export default function JobsScreen() {
           {segment === 'subscriptions' ? (
             subsLoading ? (
               <JobListSkeleton />
+            ) : subsError ? (
+              <QueryErrorState onRetry={() => refetchSubs()} />
             ) : subscriptions.length === 0 ? (
               <EmptyState
                 heading="No subscriptions"
@@ -315,6 +306,8 @@ export default function JobsScreen() {
           {segment === 'history' ? (
             jobsLoading ? (
               <JobListSkeleton />
+            ) : jobsError ? (
+              <QueryErrorState onRetry={() => refetchJobs()} />
             ) : history.length === 0 ? (
               <EmptyState
                 heading="No completed jobs"

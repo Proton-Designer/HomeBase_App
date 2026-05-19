@@ -3,30 +3,18 @@ import { View, Text, ScrollView, Pressable, Image, Platform } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Plus, ChevronRight } from 'lucide-react-native';
-import { format, formatDistanceToNowStrict } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Pill } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState, QueryErrorState } from '../../../components/shared';
 import { useAuthStore } from '../../../stores/authStore';
 import * as postingsApi from '../../../lib/api/postings';
+import { SERVICE_LABELS } from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-import type { ServiceType, PostingStatus } from '../../../lib/types';
-
-const SERVICE_LABELS: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
+import type { PostingStatus } from '../../../lib/types';
 
 const STATUS_TONE: Record<PostingStatus, 'primary' | 'success' | 'neutral' | 'warning'> = {
   open: 'primary',
@@ -47,7 +35,7 @@ export default function PostingsListScreen() {
   const pendingSetup = useAuthStore((s) => s.pendingHomeownerSetup);
   const areaLabel = pendingSetup?.city ? `${pendingSetup.city}-area` : 'local';
 
-  const { data: postings = [], isLoading } = useQuery({
+  const { data: postings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['postings', 'all', userId],
     queryFn: () => postingsApi.listForHomeowner(userId!),
     enabled: !!userId,
@@ -105,6 +93,8 @@ export default function PostingsListScreen() {
               Loading…
             </Text>
           </Card>
+        ) : isError ? (
+          <QueryErrorState onRetry={() => refetch()} />
         ) : postings.length === 0 ? (
           <EmptyState
             heading="No postings yet"

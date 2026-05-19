@@ -19,7 +19,7 @@ import Animated from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { Pill, type PillTone } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { SkeletonLoader } from '../../../components/shared';
+import { SkeletonLoader, QueryErrorState } from '../../../components/shared';
 import * as claimsApi from '../../../lib/api/claims';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import { enter } from '../../../lib/motion';
@@ -165,7 +165,7 @@ export default function ClaimDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { data: claim, isLoading } = useQuery({
+  const { data: claim, isLoading, isError, refetch } = useQuery({
     queryKey: ['claims', id],
     queryFn: () => claimsApi.get(id ?? ''),
     enabled: !!id,
@@ -203,7 +203,11 @@ export default function ClaimDetailScreen() {
           paddingBottom: 40,
         }}
       >
-        {isLoading || !claim ? (
+        {isLoading ? (
+          <DetailSkeleton />
+        ) : isError ? (
+          <QueryErrorState onRetry={() => refetch()} />
+        ) : !claim ? (
           <DetailSkeleton />
         ) : (
           <>

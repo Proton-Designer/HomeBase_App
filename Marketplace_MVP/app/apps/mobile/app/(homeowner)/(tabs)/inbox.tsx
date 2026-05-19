@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, View, Pressable, Image, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Section } from '../../../components/ui/Section';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { Pill } from '../../../components/ui/Pill';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState, QueryErrorState } from '../../../components/shared';
 import {
   listThreadsForHomeowner,
   listForJob,
@@ -31,7 +31,7 @@ export default function InboxScreen() {
   const isDesktop = useBreakpoint() === 'desktop';
   const homeownerId = useAuthStore((s) => s.user?.id ?? null);
 
-  const { data: threads = [], isLoading } = useQuery({
+  const { data: threads = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['threads', 'homeowner', homeownerId],
     queryFn: () => listThreadsForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,
@@ -44,6 +44,14 @@ export default function InboxScreen() {
       setSelectedJobId(threads[0].jobId);
     }
   }, [isDesktop, selectedJobId, threads]);
+
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <QueryErrorState onRetry={() => refetch()} />
+      </SafeAreaView>
+    );
+  }
 
   if (!isLoading && threads.length === 0) {
     return (
@@ -140,7 +148,16 @@ export default function InboxScreen() {
               })}
             </ScrollView>
           </View>
-          {selectedJobId ? <ThreadDetail jobId={selectedJobId} /> : <View style={{ flex: 1 }} />}
+          {selectedJobId ? (
+            <ThreadDetail
+              jobId={selectedJobId}
+              otherPartyName={
+                threads.find((t) => t.jobId === selectedJobId)?.otherPartyName ?? 'Conversation'
+              }
+            />
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
         </View>
       </SafeAreaView>
     );
@@ -271,7 +288,7 @@ function ThreadRow({
   );
 }
 
-function ThreadDetail({ jobId }: { jobId: string }) {
+function ThreadDetail({ jobId, otherPartyName }: { jobId: string; otherPartyName: string }) {
   const queryClient = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
@@ -304,11 +321,6 @@ function ThreadDetail({ jobId }: { jobId: string }) {
     setInput('');
     sendM.mutate(trimmed);
   };
-
-  const otherPartyName = useMemo(
-    () => messages.find((m) => m.fromUserId !== userId)?.fromRole === 'homeowner' ? 'You' : 'Provider',
-    [messages, userId]
-  );
 
   return (
     <View

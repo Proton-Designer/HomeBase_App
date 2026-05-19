@@ -4,13 +4,12 @@ import { useRouter } from 'expo-router';
 import { Banknote, Check, Zap, Loader } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import * as payments from '../../../lib/api/payments';
 
 export default function BankingStep() {
   const router = useRouter();
-  const [connected, setConnected] = useState(false);
+  const [connected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +125,7 @@ export default function BankingStep() {
                     marginTop: 2,
                   }}
                 >
-                  We'll detect when you finish.
+                  We&apos;ll detect when you finish.
                 </Text>
               </View>
             </View>
@@ -206,7 +205,7 @@ export default function BankingStep() {
                 textAlign: 'center',
               }}
             >
-              If you've finished onboarding, tap Continue.
+              If you&apos;ve finished onboarding, tap Continue.
             </Text>
           </>
         ) : (

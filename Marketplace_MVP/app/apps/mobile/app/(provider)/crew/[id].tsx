@@ -420,7 +420,7 @@ export default function CrewMemberDetailScreen() {
               textAlign: 'center',
             }}
           >
-            They'll lose access to upcoming jobs immediately.
+            They&apos;ll lose access to upcoming jobs immediately.
           </Text>
           <View style={{ gap: 10, marginTop: 8 }}>
             <Button

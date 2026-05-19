@@ -1,21 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View, Pressable, Platform } from 'react-native';
+import { Alert, ScrollView, Text, View, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { ResponsiveContainer } from '../../../components/responsive/ResponsiveContainer';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Clock, MapPin, Timer, UserCog, Check, MessageSquare } from 'lucide-react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState , QueryErrorState } from '../../../components/shared';
 import { BottomSheetWrapper } from '../../../components/shared/BottomSheetWrapper';
 import type { BottomSheetWrapperHandle } from '../../../components/shared/BottomSheetWrapper';
 import { ProviderCheckIn } from '../../../components/checkin/ProviderCheckIn';
@@ -26,18 +21,10 @@ import { colors, textStyles, numericTabular, fonts } from '../../../tokens';
 import * as crewApi from '../../../lib/api/crew';
 import * as jobsApi from '../../../lib/api/jobs';
 import { supabase } from '../../../lib/supabase';
-import type { Job, ProviderJobRequest } from '../../../lib/types';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
+import type { Job, ProviderJobRequest, ServiceType } from '../../../lib/types';
 
 type Segment = 'requests' | 'active' | 'completed';
-
-const SERVICE_LABEL: Record<string, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-};
 
 function JobStatusPill({ status, scheduledAt }: { status: string; scheduledAt: string }) {
   const timeAgo = formatDistanceToNow(new Date(scheduledAt), { addSuffix: true });
@@ -129,7 +116,7 @@ export default function ProviderJobsScreen() {
   const [requests, setRequests] = useState<ProviderJobRequest[]>([]);
 
   // Active/confirmed jobs from real API
-  const { data: allJobs = [], isLoading: jobsLoading } = useQuery<Job[]>({
+  const { data: allJobs = [], isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery<Job[]>({
     queryKey: ['provider', 'jobs', providerId],
     queryFn: () => jobsApi.listForProvider(providerId ?? ''),
     enabled: !!providerId,
@@ -165,10 +152,10 @@ export default function ProviderJobsScreen() {
     enabled: !!providerId,
   });
 
-  const activeJobs = (allJobs as unknown as Array<Record<string, unknown>>).filter(
+  const activeJobs = (allJobs as unknown as Record<string, unknown>[]).filter(
     (j) => j.status !== 'completed' && j.status !== 'cancelled' && j.status !== 'pending'
   );
-  const completedJobs = (allJobs as unknown as Array<Record<string, unknown>>).filter(
+  const completedJobs = (allJobs as unknown as Record<string, unknown>[]).filter(
     (j) => j.status === 'completed'
   );
 
@@ -202,9 +189,13 @@ export default function ProviderJobsScreen() {
   }
 
   async function handleAssign(jobId: string, techUserId: string | null) {
+    const previousTechUserId = assignments[jobId] ?? undefined;
     setAssignments((prev) => ({ ...prev, [jobId]: techUserId }));
     assignSheetRef.current?.dismiss();
-    crewApi.assignToJob(jobId, techUserId).catch(() => {});
+    crewApi.assignToJob(jobId, techUserId).catch(() => {
+      setAssignments((prev) => ({ ...prev, [jobId]: previousTechUserId ?? null }));
+      Alert.alert('Could not assign', 'The job assignment did not save. Please try again.');
+    });
   }
 
   function assignedTechName(jobId: string): string | null {
@@ -326,7 +317,9 @@ export default function ProviderJobsScreen() {
           ) : null}
 
           {segment === 'active' ? (
-            jobsLoading ? (
+            jobsError ? (
+              <QueryErrorState onRetry={() => refetchJobs()} />
+            ) : jobsLoading ? (
               <Card>
                 <Text style={{ ...textStyles['body-md'], color: colors.textSecondary, textAlign: 'center' }}>
                   Loading…
@@ -367,7 +360,7 @@ export default function ProviderJobsScreen() {
                             } as TextStyle}
                           >
                             {format(new Date(job.scheduledAt as string), "EEE, h:mm a")} ·{' '}
-                            {SERVICE_LABEL[job.serviceType as string] ?? job.serviceType}
+                            {SERVICE_LABEL[job.serviceType as ServiceType] ?? job.serviceType}
                           </Text>
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 4 }}>
@@ -497,7 +490,7 @@ export default function ProviderJobsScreen() {
                             } as TextStyle}
                           >
                             {format(new Date(job.scheduledAt as string), "EEE, MMM d")} ·{' '}
-                            {SERVICE_LABEL[job.serviceType as string] ?? job.serviceType}
+                            {SERVICE_LABEL[job.serviceType as ServiceType] ?? job.serviceType}
                           </Text>
                         </View>
                         <Text
@@ -697,7 +690,7 @@ function RequestCard({
               color: colors.textPrimary,
             } as TextStyle}
           >
-            {SERVICE_LABEL[req.serviceType] ?? req.serviceType}
+            {SERVICE_LABEL[req.serviceType as ServiceType] ?? req.serviceType}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Clock size={12} color={colors.textSecondary} />

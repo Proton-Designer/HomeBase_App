@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useBreakpoint } from '../../lib/useBreakpoint';
-import { colors, fonts, textStyles } from '../../tokens';
+import { colors, fonts } from '../../tokens';
 
 const BRAND_STATS: { numeral: string; label: string }[] = [
   { numeral: '12', label: 'vetted pros' },

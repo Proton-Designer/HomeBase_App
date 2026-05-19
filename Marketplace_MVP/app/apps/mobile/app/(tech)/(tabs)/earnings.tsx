@@ -5,24 +5,16 @@ import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState , QueryErrorState } from '../../../components/shared';
 import { useAuthStore } from '../../../stores/authStore';
 import * as jobsApi from '../../../lib/api/jobs';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-
-const SERVICE_LABEL: Record<string, string> = {
-  lawn: 'Lawn',
-  cleaning: 'Cleaning',
-  pool: 'Pool',
-  pest: 'Pest',
-  pressure: 'Pressure',
-  window: 'Window',
-};
 
 export default function TechEarningsScreen() {
   const userId = useAuthStore((s) => s.user)?.id ?? null;
 
-  const { data: allJobs = [], isLoading } = useQuery({
+  const { data: allJobs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['jobs', 'tech', userId],
     queryFn: () => jobsApi.listForTech(userId!),
     enabled: !!userId,
@@ -112,7 +104,9 @@ export default function TechEarningsScreen() {
           Recent jobs
         </Text>
 
-        {isLoading ? (
+        {isError ? (
+          <QueryErrorState onRetry={() => refetch()} />
+        ) : isLoading ? (
           <Card>
             <Text style={{ ...textStyles['body-md'], color: colors.textSecondary, textAlign: 'center' }}>
               Loading…

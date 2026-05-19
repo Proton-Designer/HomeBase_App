@@ -14,3 +14,5 @@ export { BottomSheetWrapper } from './BottomSheetWrapper';
 export type { BottomSheetWrapperHandle, BottomSheetWrapperProps } from './BottomSheetWrapper';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
+export { QueryErrorState } from './QueryErrorState';
+export type { QueryErrorStateProps } from './QueryErrorState';

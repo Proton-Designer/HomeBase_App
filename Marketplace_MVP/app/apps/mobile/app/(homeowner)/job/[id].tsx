@@ -8,28 +8,16 @@ import Animated from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Pill, type PillTone } from '../../../components/ui/Pill';
-import { JobStatusTimeline, ProviderCard, SkeletonLoader, EmptyState } from '../../../components/shared';
+import { JobStatusTimeline, ProviderCard, SkeletonLoader, EmptyState, QueryErrorState } from '../../../components/shared';
 import { HomeownerCheckIn } from '../../../components/checkin/HomeownerCheckIn';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { subscribeToJobStatus } from '../../../lib/api/realtime';
 import { submitHomeownerCheckIn } from '../../../lib/api/bookings';
 import * as api from '../../../lib/api';
 import { enter } from '../../../lib/motion';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-import type { ServiceType, JobStatus } from '../../../lib/types';
-
-const SERVICE_LABEL: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
+import type { JobStatus } from '../../../lib/types';
 
 const STATUS_TONE: Record<JobStatus, { tone: PillTone; label: string }> = {
   booked: { tone: 'neutral', label: 'Booked' },
@@ -46,13 +34,13 @@ export default function JobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [checkInOpen, setCheckInOpen] = useState(false);
 
-  const { data: job, isLoading: jobLoading } = useQuery({
+  const { data: job, isLoading: jobLoading, isError: jobError, refetch: refetchJob } = useQuery({
     queryKey: ['jobs', id],
     queryFn: () => api.jobs.detail(id as string),
     enabled: !!id,
   });
 
-  const { data: provider, isLoading: providerLoading } = useQuery({
+  const { data: provider, isLoading: providerLoading, isError: providerError, refetch: refetchProvider } = useQuery({
     queryKey: ['providers', 'detail', job?.providerId],
     queryFn: () => api.providers.detail(job!.providerId),
     enabled: !!job?.providerId,
@@ -68,6 +56,7 @@ export default function JobDetailScreen() {
   }, [id, qc]);
 
   const isLoading = jobLoading || providerLoading;
+  const isError = jobError || providerError;
 
   if (isLoading) {
     return (
@@ -79,6 +68,19 @@ export default function JobDetailScreen() {
           <SkeletonLoader width="100%" height={80} borderRadius={14} />
           <SkeletonLoader width="100%" height={100} borderRadius={14} />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <QueryErrorState
+          onRetry={() => {
+            if (jobError) void refetchJob();
+            if (providerError) void refetchProvider();
+          }}
+        />
       </SafeAreaView>
     );
   }

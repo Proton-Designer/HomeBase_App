@@ -12,10 +12,13 @@
     "dev:admin": "turbo run dev --filter=admin",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "babel-plugin-transform-import-meta": "^2.3.3",
+    "prettier": "^3.3.0",
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
   },

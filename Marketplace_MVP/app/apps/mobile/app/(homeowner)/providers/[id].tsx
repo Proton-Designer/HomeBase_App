@@ -30,6 +30,7 @@ import { TrustScoreDisplay } from '../../../components/shared/TrustScoreDisplay'
 import { VerificationBadge } from '../../../components/shared/VerificationBadge';
 import { SkeletonLoader } from '../../../components/shared/SkeletonLoader';
 import { EmptyState } from '../../../components/shared/EmptyState';
+import { QueryErrorState } from '../../../components/shared';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import * as api from '../../../lib/api';
@@ -37,6 +38,7 @@ import { track } from '../../../lib/api/events';
 import { useBookingStore } from '../../../stores/bookingStore';
 import { colors, numericTabular, shadows, textStyles } from '../../../tokens';
 import { enter } from '../../../lib/motion';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import type { ServiceType } from '../../../lib/types';
 
 const SERVICE_ICON: Record<
@@ -53,19 +55,6 @@ const SERVICE_ICON: Record<
   detailing: Car,
   tree: TreeDeciduous,
   solar: Sun,
-};
-
-const SERVICE_LABEL: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
 };
 
 function buildTagline(provider: {
@@ -166,7 +155,7 @@ export default function ProviderDetailScreen() {
   const reset = useBookingStore((s) => s.reset);
   const setServiceType = useBookingStore((s) => s.setServiceType);
 
-  const { data: provider, isLoading, error } = useQuery({
+  const { data: provider, isLoading, isError, refetch } = useQuery({
     queryKey: ['providers', 'detail', id],
     queryFn: () => api.providers.detail(id as string),
     enabled: !!id,
@@ -219,7 +208,9 @@ export default function ProviderDetailScreen() {
 
       {isLoading ? (
         <DetailSkeleton />
-      ) : error || !provider ? (
+      ) : isError ? (
+        <QueryErrorState onRetry={() => refetch()} />
+      ) : !provider ? (
         <EmptyState
           heading="Provider not found"
           body="This pro may no longer be available. Browse other pros in your area."

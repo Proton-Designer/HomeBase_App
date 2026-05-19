@@ -8,7 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Animated from 'react-native-reanimated';
 import { Pill, type PillTone } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { SkeletonLoader, EmptyState } from '../../../components/shared';
+import { SkeletonLoader, EmptyState, QueryErrorState } from '../../../components/shared';
 import * as claimsApi from '../../../lib/api/claims';
 import { useAuthStore } from '../../../stores/authStore';
 import { colors, textStyles } from '../../../tokens';
@@ -126,7 +126,7 @@ export default function ClaimsIndexScreen() {
   const router = useRouter();
   const homeownerId = useAuthStore((s) => s.user?.id ?? null);
 
-  const { data: claims, isLoading } = useQuery({
+  const { data: claims, isLoading, isError, refetch } = useQuery({
     queryKey: ['claims', 'homeowner', homeownerId],
     queryFn: () => claimsApi.listForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,
@@ -173,6 +173,8 @@ export default function ClaimsIndexScreen() {
             <ClaimRowSkeleton />
             <ClaimRowSkeleton />
           </View>
+        ) : isError ? (
+          <QueryErrorState onRetry={() => refetch()} />
         ) : !claims || claims.length === 0 ? (
           <EmptyState
             illustration={<Shield size={48} color={colors.textTertiary} />}

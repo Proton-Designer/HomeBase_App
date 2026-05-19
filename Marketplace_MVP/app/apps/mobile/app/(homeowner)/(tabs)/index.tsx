@@ -15,7 +15,7 @@ import {
 } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ProviderCard, EmptyState } from '../../../components/shared';
+import { ProviderCard, EmptyState, QueryErrorState } from '../../../components/shared';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Section } from '../../../components/ui/Section';
@@ -82,7 +82,7 @@ export default function HomeBrowseScreen() {
   const homeZip = pendingSetup?.zip ?? null;
   const homeCity = pendingSetup?.city ?? null;
 
-  const { data: allProviders = [] } = useQuery({
+  const { data: allProviders = [], isError: providersError, refetch: refetchProviders } = useQuery({
     queryKey: ['providers', 'search', homeZip, activeFilter === 'all' ? undefined : activeFilter],
     queryFn: () =>
       api.providers.search(homeZip ?? '00000', activeFilter === 'all' ? undefined : activeFilter),
@@ -304,7 +304,9 @@ export default function HomeBrowseScreen() {
             ))}
           </ScrollView>
 
-          {visibleProviders.length === 0 ? (
+          {providersError ? (
+            <QueryErrorState onRetry={() => refetchProviders()} />
+          ) : visibleProviders.length === 0 ? (
             <View style={{ paddingVertical: 16 }}>
               <EmptyState
                 heading={

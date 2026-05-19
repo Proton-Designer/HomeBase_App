@@ -110,7 +110,7 @@ export default function VerificationTier1Step() {
             paddingHorizontal: 16,
           }}
         >
-          We'll email you within 3–5 business days with your Tier 1 verification status.
+          We&apos;ll email you within 3–5 business days with your Tier 1 verification status.
         </Text>
         <View style={{ marginTop: 24, alignSelf: 'stretch' }}>
           <Button
@@ -222,7 +222,7 @@ export default function VerificationTier1Step() {
               color: colors.textPrimary,
             }}
           >
-            I consent to a background check conducted by HomeBase's verification partner (Checkr).
+            I consent to a background check conducted by HomeBase&apos;s verification partner (Checkr).
           </Text>
         </Pressable>
       </ScrollView>

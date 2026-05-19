@@ -4,7 +4,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
 } from 'react-native-reanimated';
 import { Check } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';

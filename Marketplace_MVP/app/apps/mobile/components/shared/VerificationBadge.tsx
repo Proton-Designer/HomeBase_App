@@ -34,7 +34,6 @@ export function VerificationBadge({
 
   const onPress = () => {
     onLongPress?.();
-    // eslint-disable-next-line no-console
     console.log(`[VerificationBadge] ${tooltipText[tier]}`);
   };
 

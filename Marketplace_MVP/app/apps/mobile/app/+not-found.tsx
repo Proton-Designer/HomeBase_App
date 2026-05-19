@@ -14,7 +14,7 @@ export default function NotFoundScreen() {
             color: colors.textPrimary,
           }}
         >
-          We can't find that screen.
+          We can&apos;t find that screen.
         </Text>
         <Link href="/(auth)/welcome" style={{ marginTop: 16 }}>
           <Text style={{ color: colors.primary[600], fontFamily: 'Inter_600SemiBold' }}>

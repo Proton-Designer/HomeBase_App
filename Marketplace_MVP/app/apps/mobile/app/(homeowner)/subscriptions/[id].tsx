@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, CalendarDays, RefreshCcw, ShieldCheck } from 'lucide-react-native';
+import { ChevronLeft, ShieldCheck } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
 import { format } from 'date-fns';
 
@@ -21,6 +21,7 @@ import { Pill } from '../../../components/ui/Pill';
 import { Chip } from '../../../components/ui/Chip';
 import { Input } from '../../../components/ui/Input';
 import { SkeletonLoader } from '../../../components/shared/SkeletonLoader';
+import { QueryErrorState } from '../../../components/shared/QueryErrorState';
 import {
   BottomSheetWrapper,
   type BottomSheetWrapperHandle,
@@ -28,28 +29,12 @@ import {
 import { enter } from '../../../lib/motion';
 import { colors, textStyles, numericTabular, serviceTints } from '../../../tokens';
 import * as api from '../../../lib/api/subscriptions';
-import type { Frequency, ServiceType, SubscriptionStatus } from '../../../lib/types';
-
-const SERVICE_LABELS: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
-
-const FREQUENCY_LABELS: Record<Frequency, string> = {
-  weekly: 'Weekly',
-  biweekly: 'Every 2 weeks',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  semi_annual: 'Every 6 months',
-};
+import {
+  SERVICE_LABELS,
+  FREQUENCY_LABELS,
+  SUBSCRIPTION_STATUS_LABELS as STATUS_LABELS,
+} from '../../../lib/constants';
+import type { Frequency, SubscriptionStatus } from '../../../lib/types';
 
 const ALL_FREQUENCIES: Frequency[] = [
   'weekly',
@@ -79,12 +64,6 @@ const STATUS_TONE: Record<SubscriptionStatus, 'success' | 'warning' | 'neutral'>
   active: 'success',
   paused: 'warning',
   cancelled: 'neutral',
-};
-
-const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  active: 'Active',
-  paused: 'Paused',
-  cancelled: 'Cancelled',
 };
 
 function formatMonthly(cents: number) {
@@ -154,7 +133,7 @@ export default function SubscriptionDetailScreen() {
   const [cancelNotes, setCancelNotes] = useState('');
   const [isActing, setIsActing] = useState(false);
 
-  const { data: sub, isLoading, isError } = useQuery({
+  const { data: sub, isLoading, isError, refetch } = useQuery({
     queryKey: ['subscription', id],
     queryFn: () => api.get(id ?? ''),
     enabled: !!id,
@@ -256,7 +235,34 @@ export default function SubscriptionDetailScreen() {
     );
   }
 
-  if (isError || !sub) {
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            paddingVertical: 6,
+          }}
+        >
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={8}
+            style={[
+              { padding: 8 },
+              Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null,
+            ]}
+          >
+            <ChevronLeft size={24} color={colors.textPrimary} />
+          </Pressable>
+        </View>
+        <QueryErrorState onRetry={() => refetch()} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!sub) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
         <View
@@ -622,7 +628,7 @@ export default function SubscriptionDetailScreen() {
               fontFamily: 'Inter_600SemiBold',
             }}
           >
-            View {sub.providerName}'s profile →
+            View {sub.providerName}&apos;s profile →
           </Text>
         </Pressable>
       </ScrollView>
@@ -639,7 +645,7 @@ export default function SubscriptionDetailScreen() {
               lineHeight: 22,
             }}
           >
-            We'll skip your next visits until you resume. You won't be charged.
+            We&apos;ll skip your next visits until you resume. You won&apos;t be charged.
           </Text>
           <View style={{ gap: 10, marginTop: 8 }}>
             <Button
@@ -671,7 +677,7 @@ export default function SubscriptionDetailScreen() {
               lineHeight: 22,
             }}
           >
-            We'll schedule your next visit based on your current frequency and resume charging as
+            We&apos;ll schedule your next visit based on your current frequency and resume charging as
             normal.
           </Text>
           <View style={{ gap: 10, marginTop: 8 }}>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Platform, type TextStyle } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Check, MapPin } from 'lucide-react-native';

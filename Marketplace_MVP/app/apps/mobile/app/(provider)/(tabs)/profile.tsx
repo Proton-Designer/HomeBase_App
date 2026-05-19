@@ -1,8 +1,7 @@
 import React from 'react';
-import { ScrollView, Text, View, Pressable, Alert, Platform } from 'react-native';
+import { ScrollView, Text, View, Pressable, Alert, Platform , Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Linking } from 'react-native';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { ResponsiveContainer } from '../../../components/responsive/ResponsiveContainer';
 import {
@@ -19,7 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Section } from '../../../components/ui/Section';
-import { TrustScoreDisplay, VerificationBadge } from '../../../components/shared';
+import { TrustScoreDisplay, VerificationBadge, QueryErrorState } from '../../../components/shared';
 import { useAuthStore } from '../../../stores/authStore';
 import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular, fonts } from '../../../tokens';
@@ -188,7 +187,7 @@ export default function ProviderProfileScreen() {
   const isWebDesktop = Platform.OS === 'web' && bp === 'desktop';
 
   // Fetch provider profile data (business name, trust scores, verification tier)
-  const { data: providerData } = useQuery({
+  const { data: providerData, isError: providerDataError, refetch: refetchProviderData } = useQuery({
     queryKey: ['provider', 'detail', providerId],
     queryFn: () => {
       if (!providerId) return null;
@@ -598,7 +597,9 @@ export default function ProviderProfileScreen() {
 
         <ResponsiveContainer>
           <View style={{ paddingVertical: 20 }}>
-            {isWebDesktop ? (
+            {providerDataError ? (
+              <QueryErrorState onRetry={() => refetchProviderData()} />
+            ) : isWebDesktop ? (
               <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
                 <View style={{ width: 260, gap: 16 }}>
                   {StatsCards}

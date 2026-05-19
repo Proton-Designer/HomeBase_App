@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Platform } from 'react-native';
+import { View, Text, ScrollView, Platform , Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
@@ -7,7 +7,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Pressable } from 'react-native';
 import { Card } from '../../../components/ui/Card';
 import { useAuthStore } from '../../../stores/authStore';
 import type { TextStyle } from 'react-native';

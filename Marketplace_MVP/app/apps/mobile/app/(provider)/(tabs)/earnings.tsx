@@ -14,21 +14,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState , QueryErrorState } from '../../../components/shared';
 import { supabase } from '../../../lib/supabase';
 import { useAuthStore } from '../../../stores/authStore';
 import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular, shadows, fonts } from '../../../tokens';
 import * as payments from '../../../lib/api/payments';
-
-const SERVICE_LABEL: Record<string, string> = {
-  lawn: 'Lawn',
-  cleaning: 'Cleaning',
-  pool: 'Pool',
-  pest: 'Pest',
-  pressure: 'Pressure',
-  window: 'Window',
-};
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
+import type { ServiceType } from '../../../lib/types';
 
 type PayoutStatus = 'paid' | 'in_transit' | 'pending';
 
@@ -119,7 +112,7 @@ export default function ProviderEarningsScreen() {
   const overlayStyle = useAnimatedStyle(() => ({ opacity: overlayOpacity.value }));
 
   // Fetch earnings rows
-  const { data: earningsData, isLoading: earningsLoading } = useQuery<EarningsRow[]>({
+  const { data: earningsData, isLoading: earningsLoading, isError: earningsError, refetch: refetchEarnings } = useQuery<EarningsRow[]>({
     queryKey: ['provider', 'earnings', providerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -475,7 +468,9 @@ export default function ProviderEarningsScreen() {
       {filter === 'month' && sectionLabel('this month')}
       {filter === 'all' && sectionLabel('all time')}
 
-      {earningsLoading ? (
+      {earningsError ? (
+        <QueryErrorState onRetry={() => refetchEarnings()} />
+      ) : earningsLoading ? (
         <Card>
           <Text style={{ ...textStyles['body-md'], color: colors.textSecondary, textAlign: 'center' }}>
             Loading earnings…
@@ -525,7 +520,7 @@ export default function ProviderEarningsScreen() {
 
               <View style={{ flex: 1 }}>
                 <Text style={{ ...textStyles['title-md'], color: colors.textPrimary }}>
-                  {e.homeownerFirst} · {SERVICE_LABEL[e.service] ?? e.service}
+                  {e.homeownerFirst} · {SERVICE_LABEL[e.service as ServiceType] ?? e.service}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
                   <Text

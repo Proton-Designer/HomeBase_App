@@ -78,7 +78,7 @@ export default function ClaimSubmittedScreen() {
             lineHeight: 22,
           }}
         >
-          We've notified the provider and the HomeBase team. We'll update you within 24 hours.
+          We&apos;ve notified the provider and the HomeBase team. We&apos;ll update you within 24 hours.
         </Text>
 
         <Card style={{ width: '100%', marginTop: 8 }}>

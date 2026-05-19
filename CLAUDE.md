@@ -17,7 +17,7 @@
 8. **Single RN codebase.** Homeowner + provider screens in one Expo repo, role-based screen rendering. No separate apps.
 
 ## Stack (do not deviate)
-- **Mobile:** React Native + Expo SDK 51 (managed workflow), Expo Router 3.5, NativeWind 4, Reanimated 3 (never core `Animated`).
+- **Mobile:** React Native + Expo SDK 54 (managed workflow), Expo Router 6, NativeWind 4, Reanimated 4 (never core `Animated`).
 - **State:** Zustand 4.5 (UI), TanStack Query 5 (server).
 - **Forms:** React Hook Form 7 + Zod 3.
 - **Admin:** Next.js 14 App Router, shadcn/ui, TanStack Table.

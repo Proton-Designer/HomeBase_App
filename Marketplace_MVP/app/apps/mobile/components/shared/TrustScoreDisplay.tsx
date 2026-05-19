@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Text, View, type ViewStyle, type TextStyle } from 'react-native';
+import { Platform, Text, View, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedProps,

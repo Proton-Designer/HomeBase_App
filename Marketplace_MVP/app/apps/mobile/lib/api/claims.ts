@@ -20,7 +20,8 @@ export async function create(input: {
     body: input,
   });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('claim-create returned no data');
+  return data;
 }
 
 export async function listForHomeowner(homeownerId: string): Promise<Claim[]> {

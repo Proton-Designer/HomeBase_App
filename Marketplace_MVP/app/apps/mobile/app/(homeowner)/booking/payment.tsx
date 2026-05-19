@@ -1,13 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  Platform,
-  Pressable,
-  type TextStyle,
-} from 'react-native';
+import { View, Text, ScrollView, Platform, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ShieldCheck, CreditCard, CheckCircle2, Plus } from 'lucide-react-native';
 import Animated, {
@@ -19,6 +11,7 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Pill } from '../../../components/ui/Pill';
 import { Input } from '../../../components/ui/Input';
+import { QueryErrorState } from '../../../components/shared/QueryErrorState';
 import { useBookingStore } from '../../../stores/bookingStore';
 import { useQuery } from '@tanstack/react-query';
 import * as api from '../../../lib/api';
@@ -27,20 +20,8 @@ import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import * as payments from '../../../lib/api/payments';
 import * as bookings from '../../../lib/api/bookings';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import type { ServiceType } from '../../../lib/types';
-
-const SERVICE_LABEL: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
 
 export default function PaymentStep() {
   const router = useRouter();
@@ -113,14 +94,14 @@ export default function PaymentStep() {
       const result = await payments.attachPaymentMethod({ paymentMethodId: 'pm_card_visa' });
       setCardLast4(result.last4 ?? '4242');
       closeCardSheet();
-    } catch (e) {
+    } catch {
       setCardError('Could not save card. Please try again.');
     } finally {
       setAddingCard(false);
     }
   };
 
-  const { data: provider } = useQuery({
+  const { data: provider, isError: providerError, refetch: refetchProvider } = useQuery({
     queryKey: ['providers', 'detail', matchedProviderId],
     queryFn: () => api.providers.detail(matchedProviderId!),
     enabled: !!matchedProviderId,
@@ -158,6 +139,14 @@ export default function PaymentStep() {
       setSubmitting(false);
     }
   };
+
+  if (providerError) {
+    return (
+      <View style={{ flex: 1 }}>
+        <QueryErrorState onRetry={() => refetchProvider()} />
+      </View>
+    );
+  }
 
   const isNewProvider = (provider?.checkInCount ?? 0) < 5;
   const serviceLabel = SERVICE_LABEL[(serviceType ?? 'lawn') as ServiceType] ?? 'Service';

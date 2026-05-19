@@ -5,7 +5,7 @@ import { Camera, Plus, X } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { usePostingStore } from '../../../stores/postingStore';
-import { serviceTints, colors, textStyles } from '../../../tokens';
+import { colors, textStyles } from '../../../tokens';
 import type { ServiceType } from '../../../lib/types';
 
 // A small per-vertical pool of plausible photos that the mock "upload" pulls from.

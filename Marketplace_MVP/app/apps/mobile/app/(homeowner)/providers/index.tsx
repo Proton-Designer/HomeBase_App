@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ProviderCard } from '../../../components/shared/ProviderCard';
 import { SkeletonLoader } from '../../../components/shared/SkeletonLoader';
 import { EmptyState } from '../../../components/shared/EmptyState';
+import { QueryErrorState } from '../../../components/shared';
 import { Chip } from '../../../components/ui/Chip';
 import * as api from '../../../lib/api';
 import { useAuthStore } from '../../../stores/authStore';
@@ -197,7 +198,7 @@ export default function BrowseProvidersScreen() {
   const numColumns =
     Platform.OS === 'web' && bp === 'desktop' ? 3 : Platform.OS === 'web' && bp === 'tablet' ? 2 : 1;
 
-  const { data: allProviders = [], isLoading, error, refetch, isRefetching } = useQuery({
+  const { data: allProviders = [], isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['providers', 'search', homeZip, activeFilter === 'all' ? undefined : activeFilter],
     queryFn: () =>
       api.providers.search(homeZip ?? '00000', activeFilter === 'all' ? undefined : activeFilter),
@@ -320,7 +321,7 @@ export default function BrowseProvidersScreen() {
 
       <SortSegment active={activeSort} onSelect={setActiveSort} />
 
-      {!isLoading && !error && sorted.length > 0 ? (
+      {!isLoading && !isError && sorted.length > 0 ? (
         <Text
           style={{
             fontFamily: 'Fraunces_400Regular',
@@ -373,13 +374,8 @@ export default function BrowseProvidersScreen() {
           </View>
           <BrowseSkeleton />
         </>
-      ) : error ? (
-        <EmptyState
-          heading="Couldn't load pros"
-          body="Check your connection and pull down to try again."
-          ctaLabel="Retry"
-          onCta={() => refetch()}
-        />
+      ) : isError ? (
+        <QueryErrorState onRetry={() => refetch()} />
       ) : (
         <FlatList
           data={sorted}

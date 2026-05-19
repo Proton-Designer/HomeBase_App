@@ -8,22 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
-import { EmptyState } from '../../../components/shared';
+import { EmptyState , QueryErrorState } from '../../../components/shared';
 import { ProviderCheckIn } from '../../../components/checkin/ProviderCheckIn';
 import { useAuthStore } from '../../../stores/authStore';
 import * as jobsApi from '../../../lib/api/jobs';
 import { enterStaggered } from '../../../lib/motion';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import type { Job } from '../../../lib/types';
-
-const SERVICE_LABEL: Record<string, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-};
 
 export default function TechTodayScreen() {
   const today = new Date();
@@ -32,7 +24,7 @@ export default function TechTodayScreen() {
   const userId = useAuthStore((s) => s.user)?.id ?? null;
   const [checkInJob, setCheckInJob] = useState<Job | null>(null);
 
-  const { data: allJobs = [], isLoading } = useQuery({
+  const { data: allJobs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['jobs', 'tech', userId],
     queryFn: () => jobsApi.listForTech(userId!),
     enabled: !!userId,
@@ -69,7 +61,9 @@ export default function TechTodayScreen() {
           >
             Your assigned jobs
           </Text>
-          {isLoading ? (
+          {isError ? (
+            <QueryErrorState onRetry={() => refetch()} />
+          ) : isLoading ? (
             <Card>
               <Text style={{ ...textStyles['body-md'], color: colors.textSecondary, textAlign: 'center' }}>
                 Loading…

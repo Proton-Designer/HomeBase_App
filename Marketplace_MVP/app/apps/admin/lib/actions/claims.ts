@@ -5,8 +5,7 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { supabaseAdmin } from '../supabase-server';
 
-const EDGE_FUNCTION_URL =
-  'https://rukpypuzfqrswiybvbkg.supabase.co/functions/v1/release-escrow';
+const EDGE_FUNCTION_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/release-escrow`;
 
 // ---------------------------------------------------------------------------
 // Internal helpers

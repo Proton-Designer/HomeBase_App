@@ -20,7 +20,6 @@ export default function ClaimPhotosStep() {
   const router = useRouter();
   const addPhoto = useClaimStore((s) => s.addPhoto);
   const removePhoto = useClaimStore((s) => s.removePhoto);
-  const draft = useClaimStore((s) => s.draft);
 
   const claimTempId = useRef<string>(
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'

@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, textStyles } from '../../tokens';

@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-ios
+build
+.expo
+.next
+.turbo
+package-lock.json

@@ -12,10 +12,9 @@ import {
 } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import { Pill } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { useClaimStore } from '../../../stores/claimStore';
-import { colors, textStyles, numericTabular } from '../../../tokens';
+import { colors, textStyles } from '../../../tokens';
 import type { IncidentType, ResolutionKind } from '../../../lib/types';
 
 const INCIDENT_LABEL: Record<IncidentType, string> = {

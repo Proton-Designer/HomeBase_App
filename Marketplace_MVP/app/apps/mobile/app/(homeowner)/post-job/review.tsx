@@ -9,21 +9,8 @@ import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { usePostingStore } from '../../../stores/postingStore';
 import { useAuthStore } from '../../../stores/authStore';
 import * as postingsApi from '../../../lib/api/postings';
+import { SERVICE_LABELS } from '../../../lib/constants';
 import { colors, textStyles } from '../../../tokens';
-import type { ServiceType } from '../../../lib/types';
-
-const SERVICE_LABELS: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
 
 export default function PostJobReviewStep() {
   const router = useRouter();

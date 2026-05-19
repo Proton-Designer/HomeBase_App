@@ -358,7 +358,7 @@ export default function ProviderProfileStep() {
                 color: colors.success,
               }}
             >
-              You're all set! Submit to start receiving jobs.
+              You&apos;re all set! Submit to start receiving jobs.
             </Text>
           </View>
         </Card>

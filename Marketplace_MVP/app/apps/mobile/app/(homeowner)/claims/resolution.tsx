@@ -212,7 +212,7 @@ export default function ClaimResolutionStep() {
               }
             />
             <Text style={{ ...textStyles['body-sm'], color: colors.textTertiary }}>
-              The provider's payout will remain in escrow until this claim is resolved.
+              The provider&apos;s payout will remain in escrow until this claim is resolved.
             </Text>
           </View>
         ) : null}

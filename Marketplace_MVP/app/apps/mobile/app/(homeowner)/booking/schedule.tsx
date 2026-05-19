@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Platform, type TextStyle } from 'react-native';
+import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { Sparkles } from 'lucide-react-native';

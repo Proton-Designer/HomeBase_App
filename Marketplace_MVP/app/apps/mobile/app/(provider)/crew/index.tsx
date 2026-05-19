@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   Image,
   Pressable,
@@ -196,7 +196,7 @@ export default function CrewListScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Section A: Today's roster */}
         <View style={{ paddingTop: 24, gap: 12 }}>
-          <Eyebrow style={{ paddingHorizontal: 20 }}>Today's roster</Eyebrow>
+          <Eyebrow style={{ paddingHorizontal: 20 }}>Today&apos;s roster</Eyebrow>
           {isLoading ? (
             <TodayRosterSkeleton />
           ) : activeTechs.length === 0 ? (

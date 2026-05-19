@@ -3,7 +3,6 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;

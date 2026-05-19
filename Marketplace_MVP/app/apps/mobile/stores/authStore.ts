@@ -218,12 +218,17 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          await supabase
+          const { error: hwErr } = await supabase
             .from('homeowners')
             .upsert(
               { id: user.id, primary_address_id: addr.id },
               { onConflict: 'id' }
             );
+          if (hwErr) {
+            // Keep pending setup so the next authenticated session retries —
+            // do NOT mark onboarding complete when the homeowner row failed.
+            return;
+          }
 
           set({ pendingHomeownerSetup: null, onboardingComplete: true });
         },

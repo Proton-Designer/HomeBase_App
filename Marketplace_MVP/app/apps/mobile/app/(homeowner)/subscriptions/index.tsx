@@ -17,45 +17,24 @@ import { Card } from '../../../components/ui/Card';
 import { Pill } from '../../../components/ui/Pill';
 import { EmptyState } from '../../../components/shared/EmptyState';
 import { SkeletonLoader } from '../../../components/shared/SkeletonLoader';
+import { QueryErrorState } from '../../../components/shared/QueryErrorState';
 import { enterStaggered, usePress } from '../../../lib/motion';
 import { colors, textStyles, numericTabular, serviceTints } from '../../../tokens';
 import * as api from '../../../lib/api/subscriptions';
 import { useAuthStore } from '../../../stores/authStore';
-import type { Subscription, SubscriptionStatus, Frequency, ServiceType } from '../../../lib/types';
+import {
+  SERVICE_LABELS,
+  FREQUENCY_LABELS,
+  SUBSCRIPTION_STATUS_LABELS as STATUS_LABELS,
+} from '../../../lib/constants';
+import type { Subscription, SubscriptionStatus } from '../../../lib/types';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-const SERVICE_LABELS: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
-
-const FREQUENCY_LABELS: Record<Frequency, string> = {
-  weekly: 'Weekly',
-  biweekly: 'Every 2 weeks',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  semi_annual: 'Every 6 months',
-};
 
 const STATUS_TONE: Record<SubscriptionStatus, 'success' | 'warning' | 'neutral'> = {
   active: 'success',
   paused: 'warning',
   cancelled: 'neutral',
-};
-
-const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  active: 'Active',
-  paused: 'Paused',
-  cancelled: 'Cancelled',
 };
 
 function formatMonthly(cents: number) {
@@ -209,7 +188,7 @@ export default function SubscriptionsListScreen() {
   const homeownerId = useAuthStore((s) => s.user?.id ?? null);
   const [cancelledExpanded, setCancelledExpanded] = useState(false);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['subscriptions', homeownerId],
     queryFn: () => api.listForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,
@@ -257,11 +236,7 @@ export default function SubscriptionsListScreen() {
           ))}
         </ScrollView>
       ) : isError ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ ...textStyles['body-md'], color: colors.error }}>
-            Failed to load subscriptions. Please try again.
-          </Text>
-        </View>
+        <QueryErrorState onRetry={() => refetch()} />
       ) : data && data.length === 0 ? (
         <EmptyState
           heading="No subscriptions yet"

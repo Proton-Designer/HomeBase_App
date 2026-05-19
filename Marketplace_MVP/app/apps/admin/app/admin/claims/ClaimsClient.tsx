@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition, useOptimistic } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { ChevronRight, AlertOctagon } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -205,8 +205,6 @@ function ClaimDrawerBody({
       }
     });
   }
-
-  const isTerminal = claim.status === 'denied' || claim.status === 'resolved';
 
   return (
     <div className="space-y-5">

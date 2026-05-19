@@ -11,7 +11,8 @@ export async function attachPaymentMethod(input: { paymentMethodId: string }): P
     last4: string | null;
   }>('stripe-attach-payment-method', { body: input });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('stripe-attach-payment-method returned no data');
+  return data;
 }
 
 export async function createIntent(input: { bookingId: string }): Promise<{
@@ -31,7 +32,8 @@ export async function createIntent(input: { bookingId: string }): Promise<{
     escrowHoldDays: number;
   }>('stripe-create-intent', { body: input });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('stripe-create-intent returned no data');
+  return data;
 }
 
 export async function captureOnCompletion(input: { jobId: string }): Promise<{
@@ -45,7 +47,8 @@ export async function captureOnCompletion(input: { jobId: string }): Promise<{
     escrowAmountCents: number;
   }>('stripe-capture-on-completion', { body: input });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('stripe-capture-on-completion returned no data');
+  return data;
 }
 
 export async function instantPayout(input: { amountCents?: number }): Promise<{
@@ -61,7 +64,8 @@ export async function instantPayout(input: { amountCents?: number }): Promise<{
     arrivalDate: number;
   }>('stripe-instant-payout', { body: input });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('stripe-instant-payout returned no data');
+  return data;
 }
 
 export async function onboardProvider(input: {
@@ -74,5 +78,6 @@ export async function onboardProvider(input: {
     expiresAt: number;
   }>('stripe-onboard-provider', { body: input });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('stripe-onboard-provider returned no data');
+  return data;
 }

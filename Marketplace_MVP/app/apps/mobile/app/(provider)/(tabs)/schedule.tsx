@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval } from 'date-fns';
-import { CalendarX, Plus } from 'lucide-react-native';
+import { CalendarX } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Section } from '../../../components/ui/Section';
+import { QueryErrorState } from '../../../components/shared';
 import {
   BottomSheetWrapper,
   type BottomSheetWrapperHandle,
@@ -55,7 +56,7 @@ export default function ProviderScheduleScreen() {
   const providerId = useAuthStore((s) => s.providerId) ?? '';
 
   // Scheduled jobs for the week
-  const { data: weekJobs = [] } = useQuery<Job[]>({
+  const { data: weekJobs = [], isError: weekJobsError, refetch: refetchWeekJobs } = useQuery<Job[]>({
     queryKey: ['provider', 'jobs', providerId],
     queryFn: () => jobsApi.listForProvider(providerId),
     enabled: !!providerId,
@@ -89,7 +90,7 @@ export default function ProviderScheduleScreen() {
   const fromDate = days[0].toISOString();
   const toDate = addDays(days[6], 1).toISOString();
 
-  const { data: blockedTimes = [] } = useQuery<BlockedTime[]>({
+  const { data: blockedTimes = [], isError: blockedTimesError, refetch: refetchBlockedTimes } = useQuery<BlockedTime[]>({
     queryKey: ['blocked-times', providerId, fromDate, toDate],
     queryFn: () => listBlockedTimes(providerId, fromDate, toDate),
     enabled: !!providerId,
@@ -826,6 +827,12 @@ export default function ProviderScheduleScreen() {
     </BottomSheetWrapper>
   );
 
+  const scheduleError = weekJobsError || blockedTimesError;
+  const scheduleRefetch = () => {
+    if (weekJobsError) refetchWeekJobs();
+    if (blockedTimesError) refetchBlockedTimes();
+  };
+
   if (isDesktop) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
@@ -834,7 +841,9 @@ export default function ProviderScheduleScreen() {
           <Section tight>
             <View style={{ gap: 20 }}>
               {ViewSwitcher}
-              {view === 'week' ? WeekGrid : MonthGrid}
+              {scheduleError ? (
+                <QueryErrorState onRetry={scheduleRefetch} />
+              ) : view === 'week' ? WeekGrid : MonthGrid}
             </View>
           </Section>
         </ScrollView>
@@ -848,7 +857,9 @@ export default function ProviderScheduleScreen() {
       <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>{Header}</View>
       <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>{ViewSwitcher}</View>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
-        {view === 'week' ? WeekGrid : MonthGrid}
+        {scheduleError ? (
+          <QueryErrorState onRetry={scheduleRefetch} />
+        ) : view === 'week' ? WeekGrid : MonthGrid}
       </ScrollView>
       {BlockTimeSheet}
     </SafeAreaView>

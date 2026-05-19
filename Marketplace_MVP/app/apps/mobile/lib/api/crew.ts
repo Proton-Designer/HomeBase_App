@@ -39,7 +39,8 @@ export async function invite(input: {
     body: input,
   });
   if (error) throw error;
-  return data!;
+  if (!data) throw new Error('crew-invite returned no data');
+  return data;
 }
 
 export async function remove(membershipId: string): Promise<void> {

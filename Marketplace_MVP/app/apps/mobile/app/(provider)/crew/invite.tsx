@@ -216,7 +216,7 @@ export default function InviteTechScreen() {
                 lineHeight: 20,
               }}
             >
-              Techs only see jobs assigned to them. They can't see schedule, earnings, or banking.
+              Techs only see jobs assigned to them. They can&apos;t see schedule, earnings, or banking.
             </Text>
           </Card>
         </ScrollView>

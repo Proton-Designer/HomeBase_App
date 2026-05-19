@@ -5,7 +5,6 @@ import { MapPin, Crosshair } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
-import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 
 const RADII = [5, 10, 15, 20, 25];
@@ -36,7 +35,7 @@ export default function ServiceAreaStep() {
               marginTop: 6,
             }}
           >
-            You'll only receive job requests within this area. Adjust anytime.
+            You&apos;ll only receive job requests within this area. Adjust anytime.
           </Text>
         </View>
 

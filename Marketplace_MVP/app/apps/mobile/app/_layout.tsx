@@ -1,9 +1,8 @@
 import '../global.css';
-import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -13,6 +12,7 @@ import { colors } from '../tokens';
 import { WebShell } from '../components/WebShell';
 import { FontProvider } from '../components/FontProvider';
 import { AppSplashScreen } from '../components/AppSplashScreen';
+import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { useAuthStore } from '../stores/authStore';
 import * as notificationsApi from '../lib/api/notifications';
 
@@ -99,18 +99,20 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <StatusBar style="dark" />
-            <AuthBootstrap>
-              <WebShell>
-                <Stack screenOptions={ROOT_STACK_SCREEN_OPTIONS}>
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="(homeowner)" />
-                  <Stack.Screen name="(provider)" />
-                  <Stack.Screen name="(tech)" />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-              </WebShell>
-            </AuthBootstrap>
+            <AppErrorBoundary>
+              <AuthBootstrap>
+                <WebShell>
+                  <Stack screenOptions={ROOT_STACK_SCREEN_OPTIONS}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="(homeowner)" />
+                    <Stack.Screen name="(provider)" />
+                    <Stack.Screen name="(tech)" />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                </WebShell>
+              </AuthBootstrap>
+            </AppErrorBoundary>
           </QueryClientProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

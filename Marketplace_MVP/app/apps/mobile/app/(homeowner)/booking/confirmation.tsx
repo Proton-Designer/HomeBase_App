@@ -22,21 +22,9 @@ import { celebrate, onlyNative } from '../../../lib/motion';
 import { track } from '../../../lib/api/events';
 import * as api from '../../../lib/api';
 import { useQuery } from '@tanstack/react-query';
+import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
 import { colors, shadows, textStyles } from '../../../tokens';
 import type { ServiceType } from '../../../lib/types';
-
-const SERVICE_LABEL: Record<ServiceType, string> = {
-  lawn: 'Lawn Care',
-  cleaning: 'Home Cleaning',
-  pool: 'Pool Cleaning',
-  pest: 'Pest Control',
-  pressure: 'Pressure Washing',
-  window: 'Window Cleaning',
-  gutter: 'Gutter Cleaning',
-  detailing: 'Car Detailing',
-  tree: 'Tree & Plant Trimming',
-  solar: 'Solar Panel Cleaning',
-};
 
 const CONFETTI_COUNT = 14;
 

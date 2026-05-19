@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Platform, Pressable, Text, View, ScrollView, type TextStyle } from 'react-native';
+import { Image, Platform, Pressable, Text, View, ScrollView } from 'react-native';
 import { MapPin } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
