@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ios/
+build/
+web-build/
+.expo/
+.next/
+.turbo/
+out/
+*.tsbuildinfo
+
+# Environment / secrets — never commit. Templates (.env.example) are tracked.
+.env
+.env.local
+.env.*.local
+
+# Deploy platforms
+.vercel/
+.netlify/
+
+# Editor / OS noise
+.DS_Store
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Local artifacts
+predemock-backup-*.tar.gz
+.nested-git-archive/

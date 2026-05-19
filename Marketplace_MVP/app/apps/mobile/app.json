@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "HomeBase",
+    "slug": "homebase",
+    "scheme": "homebase",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A3D2B"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.homebase.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A3D2B"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "co.homebase.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "name": "HomeBase",
+      "shortName": "HomeBase",
+      "lang": "en",
+      "themeColor": "#1A3D2B",
+      "backgroundColor": "#F8F6F1",
+      "description": "AI-native home services marketplace — find vetted, trusted lawn care and house cleaning pros in your neighborhood."
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1A3D2B"
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

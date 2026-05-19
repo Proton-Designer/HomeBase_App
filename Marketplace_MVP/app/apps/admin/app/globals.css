@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    background: #F8F6F1;
+    color: #1C1C1E;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+  :root {
+    color-scheme: light;
+  }
+}
+
+@layer components {
+  .pill {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+}
