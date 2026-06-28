@@ -240,11 +240,18 @@ export default function ProviderJobsScreen() {
   }
 
   // Hydrate crew assignments from the DB (assigned_tech_id) so they survive reload.
+  // Key on a stable string signature, NOT the allJobs array reference: while the query is
+  // loading/erroring `allJobs` defaults to a fresh [] every render, so depending on the
+  // array would re-run this effect → setAssignments → re-render → infinite loop.
+  const assignmentSig = (allJobs as Job[])
+    .map((j) => `${j.id}:${j.assignedTechId ?? ''}`)
+    .join('|');
   useEffect(() => {
     const fromDb: Record<string, string | null> = {};
     for (const j of allJobs as Job[]) if (j.assignedTechId) fromDb[j.id] = j.assignedTechId;
     setAssignments(fromDb);
-  }, [allJobs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignmentSig]);
 
   function assignedTechName(jobId: string): string | null {
     const techUserId = assignments[jobId];
