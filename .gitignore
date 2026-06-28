@@ -30,3 +30,21 @@ yarn-error.log*
 # Local artifacts
 predemock-backup-*.tar.gz
 .nested-git-archive/
+
+# Native build artifacts (managed workflow: usually absent)
+ios/Pods
+ios/build
+android/build
+android/.gradle
+android/app/build
+
+# Editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Test coverage
+coverage
+
+# ios-simulator-mcp scratch output (screenshots/recordings)
+.tmp/

@@ -1,0 +1,153 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation:
+      - generic [ref=e8]:
+        - link "HomeBase" [ref=e9] [cursor=pointer]:
+          - /url: /pros
+          - img [ref=e11]
+          - generic [ref=e14]: HomeBase
+        - generic [ref=e15]:
+          - link "How it works" [ref=e16] [cursor=pointer]:
+            - /url: "#how-it-works"
+          - link "Why HomeBase" [ref=e17] [cursor=pointer]:
+            - /url: "#why"
+          - link "For pros" [ref=e18] [cursor=pointer]:
+            - /url: /pros
+        - link "Apply to join" [ref=e19] [cursor=pointer]:
+          - /url: "#apply"
+    - generic [ref=e20]:
+      - generic:
+        - generic:
+          - generic:
+            - img
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: FOR LAWN & CLEANING PROS — AUSTIN
+        - heading "Never pay for a lead again." [level=1] [ref=e24]:
+          - text: Never pay for a
+          - generic [ref=e25]: lead
+          - text: again.
+        - paragraph [ref=e26]: Real homeowners who picked you. Your prices. Money in your account the day the job's done.
+        - generic [ref=e27]:
+          - link "Apply to join — no lead fees" [ref=e28] [cursor=pointer]:
+            - /url: "#apply"
+          - link "How it works" [ref=e29] [cursor=pointer]:
+            - /url: "#how"
+    - generic [ref=e31]:
+      - heading "Stop renting strangers' phone numbers." [level=2] [ref=e34]
+      - generic [ref=e35]:
+        - generic [ref=e37]:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - img
+            - generic:
+              - img
+          - paragraph [ref=e38]: LEAD-GEN PLATFORMS
+          - generic [ref=e39]: −$0/mo
+          - paragraph [ref=e40]: for leads that mostly never answer
+        - generic [ref=e42]:
+          - paragraph [ref=e43]: HOMEBASE
+          - paragraph [ref=e44]: $0 to receive requests. $0 to quote.
+          - paragraph [ref=e45]: A small take rate only when a job is verified complete.
+          - paragraph [ref=e46]: If you don't get paid, we don't either.
+    - generic [ref=e47]:
+      - generic [ref=e49]:
+        - paragraph [ref=e50]: HOW IT WORKS
+        - heading "From verified to paid — same day." [level=2] [ref=e51]
+        - paragraph [ref=e52]: No lead fees. No auto-assignment. Homeowners pick you; you set the price.
+      - generic [ref=e53]:
+        - generic:
+          - img
+        - generic [ref=e54]:
+          - generic [ref=e56]:
+            - generic [ref=e59]: "01"
+            - generic [ref=e60]:
+              - img [ref=e62]
+              - heading "Get verified" [level=3] [ref=e65]
+              - paragraph [ref=e66]: Background check + insurance — the badge that makes homeowners pick you.
+          - generic [ref=e68]:
+            - generic [ref=e71]: "02"
+            - generic [ref=e72]:
+              - img [ref=e74]
+              - heading "Receive real requests" [level=3] [ref=e77]
+              - paragraph [ref=e78]: "A full brief every time: service, details, photos. Homeowners who already chose to reach you."
+          - generic [ref=e80]:
+            - generic [ref=e83]: "03"
+            - generic [ref=e84]:
+              - img [ref=e86]
+              - heading "Quote your price" [level=3] [ref=e88]
+              - paragraph [ref=e89]: HomeBase never sets your price. Ever. You quote your real number and timing.
+          - generic [ref=e91]:
+            - generic [ref=e94]: "04"
+            - generic [ref=e95]:
+              - img [ref=e97]
+              - heading "Do the work" [level=3] [ref=e101]
+              - paragraph [ref=e102]: Show up, do what you do best, and submit a 15-second check-in when it's done.
+          - generic [ref=e104]:
+            - generic [ref=e107]: "05"
+            - generic [ref=e108]:
+              - img [ref=e110]
+              - heading "Get paid same-day" [level=3] [ref=e112]
+              - paragraph [ref=e113]: Instant payout when the job's verified — not in 12 days.
+    - generic [ref=e114]:
+      - heading "Your reputation, finally portable — and provable." [level=2] [ref=e117]
+      - generic [ref=e118]:
+        - generic [ref=e120]:
+          - paragraph [ref=e121]: ALREADY ESTABLISHED?
+          - generic [ref=e122]:
+            - img [ref=e123]
+            - generic [ref=e126]: Established business · 9 yrs · Verified on Google
+          - paragraph [ref=e127]: Start with proof, not zero.
+        - generic [ref=e129]:
+          - paragraph [ref=e130]: BUILDING FROM HERE?
+          - generic [ref=e132]:
+            - img [ref=e133]
+            - generic [ref=e136]: "0"
+          - paragraph [ref=e137]: Every verified job grows a score competitors can't fake.
+    - generic [ref=e140]:
+      - img [ref=e142]
+      - paragraph [ref=e147]: Built for crews, not just gig workers. Owner and tech accounts, one business. Bring your team.
+    - generic [ref=e150]:
+      - paragraph [ref=e151]: FOUNDING MEMBERS
+      - heading "The first crews in get the best deal we'll ever offer." [level=2] [ref=e152]
+      - paragraph [ref=e153]: Founding members lock in a reduced take rate. Austin pilot — limited seats.
+      - link "Apply to join" [ref=e155] [cursor=pointer]:
+        - /url: mailto:pros@myhomebase.co?subject=Founding%20member%20application
+      - paragraph [ref=e156]: We're new. We won't promise you the moon — just zero lead fees and same-day pay.
+  - contentinfo [ref=e157]:
+    - generic [ref=e158]:
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img [ref=e163]
+            - text: HomeBase
+          - paragraph [ref=e166]: A trusted local marketplace where homeowners hire vetted home-service pros. You compare, you choose, you’re protected.
+        - generic [ref=e167]:
+          - heading "Homeowners" [level=3] [ref=e168]
+          - list [ref=e169]:
+            - listitem [ref=e170]:
+              - link "How it works" [ref=e171] [cursor=pointer]:
+                - /url: /#how-it-works
+            - listitem [ref=e172]:
+              - link "Why HomeBase" [ref=e173] [cursor=pointer]:
+                - /url: /#why
+            - listitem [ref=e174]:
+              - link "Get started" [ref=e175] [cursor=pointer]:
+                - /url: /#cta
+        - generic [ref=e176]:
+          - heading "Pros" [level=3] [ref=e177]
+          - list [ref=e178]:
+            - listitem [ref=e179]:
+              - link "Why join" [ref=e180] [cursor=pointer]:
+                - /url: /pros#why
+            - listitem [ref=e181]:
+              - link "Apply" [ref=e182] [cursor=pointer]:
+                - /url: /pros#apply
+      - generic [ref=e183]:
+        - paragraph [ref=e184]: © 2026 HomeBase · Austin, TX
+        - generic [ref=e185]:
+          - generic [ref=e186]: Built where the work actually gets done.
+          - img [ref=e187]
+  - button "Open Next.js Dev Tools" [ref=e195] [cursor=pointer]:
+    - img [ref=e196]

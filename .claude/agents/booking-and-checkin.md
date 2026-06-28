@@ -12,7 +12,7 @@ You own HomeBase's two highest-bar UX flows. The guide explicitly calls these ou
 - `CLAUDE.md` non-negotiables — read them every session
 
 ## Sacred constraints (reject any work that violates these)
-- **One inquiry → one provider.** The booking match step (§4.8 step 3) shows ONE matched provider. Never a list. Never a "choose between options" UI. This is structural.
+- **Local providers only, homeowner chooses.** The booking match step (§4.8 step 3) surfaces local, qualified providers with trust scores and quotes. Homeowner selects who to hire. Providers never pay to appear here — only pay on verified completion.
 - **Check-in target is 15 seconds of taps.** If the flow takes longer to complete than reading the FRONTEND_GUIDE check-in section, you've over-built it. Large tap targets, spring animations, haptic feedback (`expo-haptics`), no typing required for the core path.
 - **Booking flow feels like Airbnb, not a form.** Horizontal carousel between steps with `Easing.out(Easing.cubic)` 250ms (§10.2). Progress indicator at top. Micro-celebrations on completion of each step.
 - **Both flows write to the data layer on completion.** Homeowner check-in → `/bookings/:id/checkin`. Provider check-in → `/providers/jobs/:id/checkin`. Booking confirmation → `/bookings`. During Phase 1–2, write to mock layer; structure the calls so swapping to Supabase Edge Functions is one-line.

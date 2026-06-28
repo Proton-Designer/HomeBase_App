@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>House 3D viewer</title>
+<style>
+  html,body{margin:0;height:100%;background:#0e0e10;color:#eee;font-family:system-ui,sans-serif;overflow:hidden}
+  #c{display:block;width:100vw;height:100vh}
+  .hud{position:fixed;left:16px;bottom:16px;font-size:13px;color:#aaa;background:rgba(0,0,0,.4);padding:8px 12px;border-radius:8px}
+  .hud b{color:#fff;font-weight:500}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><b>Drag</b> to orbit &middot; <b>scroll</b> to zoom &middot; auto-rotates when idle</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js" type="module"></script>
+<script type="module">
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0e0e10);
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,100);
+camera.position.set(0,0.1,3.4);
+const controls=new OrbitControls(camera,canvas);
+controls.enableDamping=true; controls.autoRotate=true; controls.autoRotateSpeed=1.2;
+scene.add(new THREE.AmbientLight(0xffffff,0.9));
+const d=new THREE.DirectionalLight(0xffffff,1.4); d.position.set(2,3,4); scene.add(d);
+const d2=new THREE.DirectionalLight(0xffffff,0.5); d2.position.set(-3,1,-2); scene.add(d2);
+
+new GLTFLoader().load('./house_model.glb',(gltf)=>{
+  const m=gltf.scene;
+  m.traverse(o=>{ if(o.isMesh){ o.material.side=THREE.DoubleSide; o.material.metalness=0; o.material.roughness=1; }});
+  scene.add(m);
+});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+(function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera);})();
+</script>
+</body>
+</html>

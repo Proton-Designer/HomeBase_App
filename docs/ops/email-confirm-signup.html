@@ -1,0 +1,134 @@
+<!--
+  MyHomebase — "Confirm signup" OTP email (Supabase Auth → Authentication → Email Templates).
+  Brand: blue (#2563EB) + white, gold accent (#F3B830). Light-first, dark-mode adaptive.
+  Logo is hosted in the public Supabase bucket `email-assets` on project zkkingzdbbbriwyxbxkf,
+  served at .../email-assets/wordmark.png (upload your logo there as wordmark.png).
+  Variables: {{ .Token }} = 6-digit code, {{ .Email }} = recipient.
+  Subject: Your MyHomebase verification code
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>Your MyHomebase code</title>
+    <style>
+      :root { color-scheme: light dark; supported-color-schemes: light dark; }
+
+      /* Dark mode: deep-blue brand surface, white text, gold code — logo pill stays white */
+      @media (prefers-color-scheme: dark) {
+        .email-bg  { background-color:#0B1220 !important; }
+        .card      { background-color:#131C30 !important; border-color:rgba(255,255,255,0.08) !important; }
+        .logo-pill { background-color:#FFFFFF !important; }
+        .t-h1      { color:#F5F8FF !important; }
+        .t-sub     { color:#9AA6BF !important; }
+        .t-mut     { color:#6B7A99 !important; }
+        .otp-chip  { background-color:#0E1A33 !important; border-color:rgba(243,184,48,0.45) !important; }
+        .otp-code  { color:#F3B830 !important; }
+        .divider   { background-color:rgba(255,255,255,0.08) !important; }
+      }
+      /* Gmail forced-inversion hooks (data-ogsc = text, data-ogsb = background) */
+      [data-ogsb] .email-bg  { background-color:#0B1220 !important; }
+      [data-ogsb] .card      { background-color:#131C30 !important; }
+      [data-ogsb] .logo-pill { background-color:#FFFFFF !important; }
+      [data-ogsb] .otp-chip  { background-color:#0E1A33 !important; }
+      [data-ogsc] .otp-code  { color:#F3B830 !important; }
+      [data-ogsc] .t-h1      { color:#F5F8FF !important; }
+
+      /* Box-filling responsive code — scales with screen, never wraps or clips */
+      .otp-code { font-size:34px; letter-spacing:9px; }
+      @media only screen and (max-width:340px) {
+        .otp-code { font-size:30px !important; letter-spacing:7px !important; }
+        .otp-chip-pad { padding:20px 8px !important; }
+        .card-pad { padding:30px 20px !important; }
+      }
+      @media only screen and (min-width:380px) {
+        .otp-code { font-size:42px !important; letter-spacing:14px !important; }
+      }
+      @media only screen and (min-width:460px) {
+        .otp-code { font-size:48px !important; letter-spacing:18px !important; }
+      }
+    </style>
+  </head>
+  <body class="email-bg" style="margin:0; padding:0; background-color:#F5F8FF; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0;">Your MyHomebase verification code — enter it in the app to finish signing up.</div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-bg" style="background-color:#F5F8FF;">
+      <tr>
+        <td align="center" style="padding:40px 12px;">
+
+          <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:100%; max-width:480px;">
+
+            <!-- Logo (hosted wordmark on a white pill; alt text covers image-blocking) -->
+            <tr>
+              <td align="center" style="padding-bottom:28px;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td class="logo-pill" bgcolor="#FFFFFF" style="background-color:#FFFFFF; border-radius:14px; padding:12px 20px; box-shadow:0 4px 14px rgba(16,42,90,0.10);">
+                      <img src="https://zkkingzdbbbriwyxbxkf.supabase.co/storage/v1/object/public/email-assets/wordmark.png"
+                           width="172" alt="MyHomebase"
+                           style="display:block; width:172px; max-width:55vw; height:auto; border:0; outline:none; text-decoration:none;" />
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Card -->
+            <tr>
+              <td class="card" bgcolor="#FFFFFF" style="background-color:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 10px 34px rgba(16,42,90,0.10);">
+
+                <!-- Gradient top band: full width, curves with the card's rounded top corners -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td height="24" bgcolor="#2563EB" style="height:24px; line-height:24px; font-size:0; background-color:#2563EB; background-image:linear-gradient(90deg,#2563EB 0%,#F3B830 100%); border-radius:22px 22px 0 0;">&nbsp;</td>
+                  </tr>
+                </table>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td class="card-pad" style="padding:28px 36px 36px 36px;">
+
+                      <h1 class="t-h1" style="margin:0 0 10px 0; font-size:24px; line-height:1.25; font-weight:700; color:#1C1C1E; letter-spacing:-0.4px;">Verify your email</h1>
+                      <p class="t-sub" style="margin:0 0 28px 0; font-size:15px; line-height:1.6; color:#6B7280;">Enter this code in the MyHomebase app to finish setting up your account.</p>
+
+                      <!-- OTP code: blue on light, gold on dark; full-width chip, never wraps -->
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td class="otp-chip otp-chip-pad" align="center" bgcolor="#EFF6FF" style="background-color:#EFF6FF; border:1px solid rgba(37,99,235,0.22); border-radius:14px; padding:24px 12px;">
+                            <span class="otp-code" style="font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace; font-size:34px; line-height:1.1; font-weight:700; letter-spacing:9px; color:#1D4ED8; white-space:nowrap; mso-line-height-rule:exactly;">{{ .Token }}</span>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <p class="t-mut" style="margin:18px 0 0 0; font-size:13px; line-height:1.6; color:#9CA3AF; text-align:center;">Tap and hold to copy &middot; expires in 60 minutes</p>
+
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:26px;">
+                        <tr><td class="divider" height="1" style="height:1px; line-height:1px; font-size:0; background-color:#F3F4F6;">&nbsp;</td></tr>
+                      </table>
+
+                      <p class="t-mut" style="margin:22px 0 0 0; font-size:13px; line-height:1.6; color:#9CA3AF;">Didn't try to sign up? You can safely ignore this email — no account is created without this code.</p>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="padding:26px 24px 0 24px;">
+                <p class="t-mut" style="margin:0; font-size:12px; line-height:1.6; color:#9CA3AF;">MyHomebase — curated home services in your neighborhood.<br/>Sent to {{ .Email }}.</p>
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

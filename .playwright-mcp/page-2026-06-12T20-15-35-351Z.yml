@@ -1,0 +1,228 @@
+- generic [active] [ref=e1]:
+  - navigation:
+    - generic [ref=e7]:
+      - link "HomeBase" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - img [ref=e10]
+        - generic [ref=e13]: HomeBase
+      - generic [ref=e14]:
+        - link "How it works" [ref=e15] [cursor=pointer]:
+          - /url: "#how-it-works"
+        - link "Why HomeBase" [ref=e16] [cursor=pointer]:
+          - /url: "#why"
+        - link "For pros" [ref=e17] [cursor=pointer]:
+          - /url: /pros
+      - link "Find a pro" [ref=e18] [cursor=pointer]:
+        - /url: "#cta"
+  - generic [ref=e20]:
+    - img "A floating home rotating as you scroll" [ref=e22]:
+      - img [ref=e24]
+    - generic [ref=e26]:
+      - paragraph [ref=e28]: Austin, TX — now in 78704
+      - heading "Home, finally in good hands." [level=1] [ref=e29]
+      - paragraph [ref=e30]: Vetted local pros for lawn care & cleaning. You compare, you choose, you’re protected.
+      - generic [ref=e31]:
+        - link "Find a pro near you" [ref=e32] [cursor=pointer]:
+          - /url: "#cta"
+        - link "How it works ↓" [ref=e33] [cursor=pointer]:
+          - /url: "#how-it-works"
+    - generic [ref=e34]:
+      - heading "Posting one job shouldn’t summon seventeen strangers." [level=2] [ref=e35]
+      - paragraph [ref=e36]:
+        - text: Other platforms sell your phone number as a “lead.” We never do. Your request goes only to vetted pros nearby — and only the ones
+        - emphasis [ref=e37]: you
+        - text: pick can reply.
+    - generic [ref=e38]:
+      - heading "Vetted pros. Your choice. Fully protected." [level=2] [ref=e39]
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - img [ref=e42]
+          - text: Background-checked
+        - generic [ref=e45]:
+          - img [ref=e46]
+          - text: Insured
+        - generic [ref=e49]:
+          - img [ref=e50]
+          - text: Damage-protected
+    - generic [ref=e53]: Scroll — the house turns with you
+  - generic [ref=e54]:
+    - generic [ref=e56]:
+      - paragraph [ref=e57]: HOW IT WORKS
+      - heading "Five steps. Zero spam." [level=2] [ref=e58]
+      - paragraph [ref=e59]: From 'the lawn's a jungle' to 'done, verified, paid' — without giving your number to strangers.
+    - generic [ref=e60]:
+      - generic:
+        - img
+      - generic [ref=e61]:
+        - generic [ref=e63]:
+          - generic [ref=e66]: "01"
+          - generic [ref=e67]:
+            - img [ref=e69]
+            - heading "Tell us once" [level=3] [ref=e72]
+            - paragraph [ref=e73]: Pick lawn or cleaning, answer a few quick questions. Two minutes, tops.
+        - generic [ref=e75]:
+          - generic [ref=e78]: "02"
+          - generic [ref=e79]:
+            - img [ref=e81]
+            - heading "Meet your shortlist" [level=3] [ref=e86]
+            - paragraph [ref=e87]: 3–5 vetted local pros — trust scores, real photos of real work, availability. Curated, never crowded.
+        - generic [ref=e89]:
+          - generic [ref=e92]: "03"
+          - generic [ref=e93]:
+            - img [ref=e95]
+            - heading "Get real quotes" [level=3] [ref=e98]
+            - paragraph [ref=e99]: Reach out to one or a few. Each pro quotes their actual price and timing. No bots, no bidding wars.
+        - generic [ref=e101]:
+          - generic [ref=e104]: "04"
+          - generic [ref=e105]:
+            - img [ref=e107]
+            - heading "Choose with confidence" [level=3] [ref=e111]
+            - paragraph [ref=e112]: Compare quotes side by side and hire the one that feels right. Your contact stays private until you do.
+        - generic [ref=e114]:
+          - generic [ref=e117]: "05"
+          - generic [ref=e118]:
+            - img [ref=e120]
+            - heading "Watch it get done" [level=3] [ref=e123]
+            - paragraph [ref=e124]: Track the job live, message your pro, and rate the work in a 15-second check-in. Like it? Set it to repeat.
+  - generic [ref=e125]:
+    - heading "We built the opposite of a lead farm." [level=2] [ref=e128]
+    - generic [ref=e129]:
+      - generic [ref=e130]:
+        - paragraph [ref=e131]: The Old Way
+        - generic [ref=e132]:
+          - generic [ref=e135]: Unknown Caller (512) 555-0117
+          - generic [ref=e138]: Your info was shared with 8 contractors
+          - generic [ref=e141]: "URGENT: 3 quotes waiting!!"
+          - generic [ref=e144]: 3 missed calls — Roofing Deals LLC
+          - generic [ref=e147]: Reply STOP to opt out — Home Pros Network
+          - generic [ref=e150]: Unknown Caller (737) 555-0292
+      - generic [ref=e151]:
+        - paragraph [ref=e152]: The HomeBase Way
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - img [ref=e156]
+            - generic [ref=e158]: One request, quietly delivered to vetted pros
+          - generic [ref=e159]:
+            - img [ref=e161]
+            - generic [ref=e163]: Quotes come to you — your number stays private
+          - generic [ref=e164]:
+            - img [ref=e166]
+            - generic [ref=e168]: You choose. Nobody else calls.
+    - paragraph [ref=e170]: Your information is never for sale. Not to eight contractors. Not to one.
+  - generic [ref=e172]:
+    - generic [ref=e174]:
+      - paragraph [ref=e175]: THE TRUST LAYER
+      - heading "Trust you can actually verify." [level=2] [ref=e176]
+      - paragraph [ref=e177]: Stars can be bought. Verified jobs can't.
+    - generic [ref=e178]:
+      - generic [ref=e182]:
+        - img [ref=e184]
+        - generic [ref=e187]: Background-checked
+      - generic [ref=e191]:
+        - img [ref=e193]
+        - generic [ref=e196]: Insured
+      - generic [ref=e200]:
+        - img [ref=e202]
+        - generic [ref=e205]: Damage-protected
+      - generic [ref=e209]:
+        - img [ref=e211]
+        - generic [ref=e214]: Verified reviews
+      - generic [ref=e218]:
+        - img [ref=e220]
+        - generic [ref=e223]: Local pros only
+    - generic [ref=e225]:
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - img [ref=e228]
+          - generic [ref=e231]: "0"
+        - paragraph [ref=e232]: Trust score — earned from real completed jobs, not anonymous stars.
+      - list [ref=e233]:
+        - listitem [ref=e234]:
+          - img [ref=e236]
+          - text: Every review tied to a verified, completed job
+        - listitem [ref=e238]:
+          - img [ref=e240]
+          - text: Escrow holdback until the work checks out
+        - listitem [ref=e242]:
+          - img [ref=e244]
+          - text: A real damage guarantee — not fine print.
+  - generic [ref=e246]:
+    - generic [ref=e248]:
+      - generic [ref=e250]:
+        - heading "Your home, one calm dashboard." [level=2] [ref=e251]
+        - paragraph [ref=e252]: Book, track, message, and re-book — all in one place.
+      - img "The HomeBase marketplace dashboard" [ref=e256]
+    - generic:
+      - generic:
+        - generic:
+          - img
+    - generic:
+      - generic:
+        - generic:
+          - img
+    - generic [ref=e257]:
+      - generic [ref=e259]:
+        - img [ref=e261]
+        - paragraph [ref=e266]: Set it to recur — weekly, biweekly, monthly. Pause anytime.
+      - generic [ref=e268]:
+        - img [ref=e270]
+        - paragraph [ref=e277]: Live job tracking from booked to done.
+      - generic [ref=e279]:
+        - img [ref=e281]
+        - paragraph [ref=e284]: Every pro on screen is background-checked and insured.
+  - generic [ref=e285]:
+    - generic:
+      - generic:
+        - generic:
+          - img
+    - generic [ref=e288]:
+      - paragraph [ref=e289]: For service pros
+      - heading "Run crews? Never pay for a lead again." [level=2] [ref=e290]
+      - paragraph [ref=e291]: Real local jobs, your own prices, paid the day you finish.
+      - link "See how HomeBase works for pros →" [ref=e292] [cursor=pointer]:
+        - /url: /pros
+  - generic [ref=e293]:
+    - generic [ref=e299]:
+      - heading "Let someone trustworthy in." [level=2] [ref=e300]
+      - paragraph [ref=e301]: HomeBase is live in Austin (78704 pilot) — lawn care & house cleaning, vetted and protected.
+      - generic [ref=e302]:
+        - link "See vetted pros in your area" [ref=e303] [cursor=pointer]:
+          - /url: "#cta"
+        - link "Join as a pro" [ref=e304] [cursor=pointer]:
+          - /url: /pros
+    - paragraph [ref=e305]: Background-checked · Insured · Damage-protected
+  - contentinfo [ref=e306]:
+    - generic [ref=e307]:
+      - generic [ref=e308]:
+        - generic [ref=e309]:
+          - generic [ref=e310]:
+            - img [ref=e312]
+            - text: HomeBase
+          - paragraph [ref=e315]: A trusted local marketplace where homeowners hire vetted home-service pros. You compare, you choose, you’re protected.
+        - generic [ref=e316]:
+          - heading "Homeowners" [level=3] [ref=e317]
+          - list [ref=e318]:
+            - listitem [ref=e319]:
+              - link "How it works" [ref=e320] [cursor=pointer]:
+                - /url: /#how-it-works
+            - listitem [ref=e321]:
+              - link "Why HomeBase" [ref=e322] [cursor=pointer]:
+                - /url: /#why
+            - listitem [ref=e323]:
+              - link "Get started" [ref=e324] [cursor=pointer]:
+                - /url: /#cta
+        - generic [ref=e325]:
+          - heading "Pros" [level=3] [ref=e326]
+          - list [ref=e327]:
+            - listitem [ref=e328]:
+              - link "Why join" [ref=e329] [cursor=pointer]:
+                - /url: /pros#why
+            - listitem [ref=e330]:
+              - link "Apply" [ref=e331] [cursor=pointer]:
+                - /url: /pros#apply
+      - generic [ref=e332]:
+        - paragraph [ref=e333]: © 2026 HomeBase · Austin, TX
+        - generic [ref=e334]:
+          - generic [ref=e335]: Built where the work actually gets done.
+          - img [ref=e336]
+  - alert [ref=e339]

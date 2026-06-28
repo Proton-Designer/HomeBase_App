@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ios-simulator": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "ios-simulator-mcp"
+      ],
+      "env": {
+        "IOS_SIMULATOR_MCP_IDB_PATH": "/Users/aymanmohammed/.local/bin/idb",
+        "IOS_SIMULATOR_MCP_DEFAULT_OUTPUT_DIR": "/Users/aymanmohammed/Desktop/MyHomebase/.tmp/ios-sim",
+        "PATH": "/Users/aymanmohammed/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    }
+  }
+}

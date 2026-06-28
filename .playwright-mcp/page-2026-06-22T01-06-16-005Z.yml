@@ -1,0 +1,159 @@
+- generic [ref=e1]:
+  - iframe [ref=e2]:
+    
+  - iframe
+  - generic [ref=e3]: None selected
+  - generic [ref=e11]:
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - link "Skip to content" [ref=e15] [cursor=pointer]:
+          - /url: ""
+        - link "Using Gmail with screen readers" [ref=e16] [cursor=pointer]:
+          - /url: ""
+      - heading [level=1] [ref=e18]:
+        - banner [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - button "Main menu" [expanded] [ref=e22] [cursor=pointer]:
+                - img [ref=e23]
+              - link "Gmail" [ref=e27] [cursor=pointer]:
+                - /url: "#inbox"
+                - img [ref=e28]
+            - generic [ref=e29]:
+              - search "Search mail" [ref=e31]:
+                - heading "Search mail" [level=2] [ref=e32]
+                - table [ref=e34]:
+                  - rowgroup [ref=e35]:
+                    - row "newer_than:10m" [ref=e346]:
+                      - cell "newer_than:10m" [ref=e347]:
+                        - textbox "Ask Gmail" [ref=e38]: newer_than:10m
+                - button "Advanced search options" [ref=e39] [cursor=pointer]:
+                  - img [ref=e40]
+                - button "Clear search" [ref=e42] [cursor=pointer]:
+                  - img [ref=e43]
+                - button "Search mail" [disabled] [ref=e46] [cursor=pointer]:
+                  - img [ref=e47]
+              - generic [ref=e49]:
+                - 'button "Status: Active" [ref=e50] [cursor=pointer]':
+                  - img [ref=e54]
+                - button "Support" [ref=e307] [cursor=pointer]:
+                  - img [ref=e308]
+                - button "Settings" [ref=e59] [cursor=pointer]:
+                  - img [ref=e60]
+            - generic [ref=e64]:
+              - button "Google apps" [ref=e68] [cursor=pointer]:
+                - img [ref=e69]
+              - 'button "Google Account: Ayman Mohammed (ayman.0704m@gmail.com)" [ref=e74] [cursor=pointer]':
+                - img [ref=e76]
+                - img [ref=e82]
+      - alert [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]: Enable desktop notifications for Gmail.
+          - generic [ref=e88]:
+            - link "OK" [ref=e89] [cursor=pointer]
+            - link "No thanks" [ref=e90] [cursor=pointer]
+          - button "Close" [ref=e91] [cursor=pointer]
+    - generic [ref=e93]:
+      - navigation [ref=e94]:
+        - generic [ref=e95]:
+          - link "Mail, 19734 unread messages" [ref=e96] [cursor=pointer]:
+            - generic [ref=e98]: 99+
+          - heading "Mail" [level=2] [ref=e99] [cursor=pointer]
+        - generic [ref=e100]:
+          - link "Chat, 0 unread messages" [ref=e101] [cursor=pointer]
+          - heading "Chat" [level=2] [ref=e102] [cursor=pointer]
+        - generic [ref=e103]:
+          - link "Meet" [ref=e104] [cursor=pointer]
+          - heading "Meet" [level=2] [ref=e105] [cursor=pointer]
+      - generic [ref=e107]:
+        - button "Compose" [ref=e110] [cursor=pointer]
+        - generic [ref=e115]:
+          - generic "Labels" [ref=e117]:
+            - heading "Labels" [level=2] [ref=e118]
+            - generic [ref=e119]:
+              - generic [ref=e120]:
+                - generic [ref=e122]:
+                  - generic [ref=e352]:
+                    - link "Inbox 19734 unread" [ref=e354] [cursor=pointer]:
+                      - /url: https://mail.google.com/mail/u/0/#inbox
+                      - text: Inbox
+                    - generic [ref=e355]: 19,734
+                  - link "Starred" [ref=e362] [cursor=pointer]:
+                    - /url: https://mail.google.com/mail/u/0/#starred
+                  - link "Snoozed" [ref=e369] [cursor=pointer]:
+                    - /url: https://mail.google.com/mail/u/0/#snoozed
+                  - link "Sent" [ref=e376] [cursor=pointer]:
+                    - /url: https://mail.google.com/mail/u/0/#sent
+                  - generic [ref=e381]:
+                    - link "Drafts 44 unread" [ref=e383] [cursor=pointer]:
+                      - /url: https://mail.google.com/mail/u/0/#drafts
+                      - text: Drafts
+                    - generic [ref=e384]: "44"
+                - generic [ref=e389]:
+                  - link "Purchases 164 unread has menu" [ref=e391] [cursor=pointer]:
+                    - /url: https://mail.google.com/mail/u/0/#category/purchases
+                    - text: Purchases
+                  - generic [ref=e392]: "164"
+              - button "More labels" [ref=e171] [cursor=pointer]:
+                - generic [ref=e172]: More
+          - generic [ref=e175]:
+            - heading "Labels" [ref=e176]
+            - button "Create new label" [ref=e177] [cursor=pointer]
+          - generic "Labels" [ref=e179]:
+            - heading "Labels" [level=2] [ref=e180]
+            - generic [ref=e184]:
+              - link "[Gmail]Trash has menu" [ref=e399] [cursor=pointer]:
+                - /url: https://mail.google.com/mail/u/0/#label/%5BGmail%5DTrash
+                - text: "[Gmail]Trash"
+              - link "Alim Books- 2nd yr has menu" [ref=e406] [cursor=pointer]:
+                - /url: https://mail.google.com/mail/u/0/#label/Alim+Books-+2nd+yr
+                - text: Alim Books- 2nd yr
+              - link "Notes has menu" [ref=e413] [cursor=pointer]:
+                - /url: https://mail.google.com/mail/u/0/#label/Notes
+                - text: Notes
+              - link "ScoutAI-PipelineA has menu" [ref=e420] [cursor=pointer]:
+                - /url: https://mail.google.com/mail/u/0/#label/ScoutAI-PipelineA
+                - text: ScoutAI-PipelineA
+              - link "ScoutAI-PipelineB has menu" [ref=e427] [cursor=pointer]:
+                - /url: https://mail.google.com/mail/u/0/#label/ScoutAI-PipelineB
+                - text: ScoutAI-PipelineB
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - iframe
+      - generic [ref=e429]:
+        - generic [ref=e431]:
+          - button "Email search results" [ref=e432] [cursor=pointer]:
+            - generic "Email search results" [ref=e433]:
+              - generic [ref=e434]: Mail
+          - button "Results in direct messages and spaces" [ref=e435] [cursor=pointer]:
+            - generic "Results in direct messages and spaces" [ref=e436]:
+              - generic [ref=e437]: Conversations
+          - button "Spaces matched by name" [ref=e438] [cursor=pointer]:
+            - generic "Spaces matched by name" [ref=e439]:
+              - generic [ref=e440]: Spaces
+        - generic [ref=e442]:
+          - generic [ref=e443]:
+            - generic: Loading Indicator
+          - main [ref=e473]:
+            - generic [ref=e476]:
+              - button "Most recent" [ref=e479] [cursor=pointer]:
+                - generic [ref=e480]: Most recent
+              - generic [ref=e487]:
+                - button "Input tools on/off (Ctrl-Shift-K)" [ref=e488] [cursor=pointer]
+                - button "Select input tool" [ref=e490] [cursor=pointer]
+            - heading "Conversations" [level=2] [ref=e493]
+      - generic [ref=e298]:
+        - complementary "Side panel" [ref=e299]:
+          - tablist [ref=e338]:
+            - tab "Calendar"
+            - tab "Keep"
+            - tab "Tasks"
+            - tab "Contacts"
+            - separator [disabled] [ref=e339]
+            - tab "Get Add-ons"
+        - generic:
+          - button "Hide side panel":
+            - img [ref=e342] [cursor=pointer]
+  - generic [ref=e345]: Suggestions updated

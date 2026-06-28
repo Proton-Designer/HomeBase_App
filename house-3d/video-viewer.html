@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scroll-scrub video house</title>
+<style>
+  *{margin:0;box-sizing:border-box}
+  body{font-family:system-ui,sans-serif;background:#faf8f2;color:#2c2c2a}
+  .intro,.outro{height:90vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;padding:0 20px}
+  .intro h1{font-size:42px;font-weight:600;letter-spacing:-1px}
+  .muted{color:#7a786f;font-size:15px}
+  #spin{height:300vh;position:relative}
+  #stage{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center}
+  video{width:100%;max-width:900px;height:auto;object-fit:contain}
+  .hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);font-size:13px;color:#7a786f;background:rgba(255,255,255,.7);padding:6px 14px;border-radius:20px;backdrop-filter:blur(4px)}
+  .note{max-width:520px;font-size:13px;color:#a33}
+</style>
+</head>
+<body>
+<section class="intro">
+  <h1>Find your perfect space</h1>
+  <p class="muted">Scroll &mdash; the house orbits with you.</p>
+  <p class="note" id="missing" style="display:none">No video found. Drop an all-keyframe <b>house_scroll.mp4</b> next to this file (see SPIN_README).</p>
+</section>
+
+<section id="spin">
+  <div id="stage">
+    <video id="v" muted playsinline preload="auto">
+      <source src="./house_scroll.webm" type="video/webm" />
+      <source src="./house_scroll.mp4" type="video/mp4" />
+    </video>
+  </div>
+</section>
+
+<section class="outro"><p class="muted">&hellip;rest of your page continues here.</p></section>
+<div class="hint">scroll to rotate</div>
+
+<script>
+(function(){
+  var section=document.getElementById('spin');
+  var video=document.getElementById('v');
+  var target=0, raf=false;
+  video.addEventListener('error', function(){ document.getElementById('missing').style.display='block'; });
+
+  function compute(){
+    var rect=section.getBoundingClientRect();
+    var total=rect.height-window.innerHeight;
+    var progress=Math.min(1,Math.max(0,-rect.top/total));
+    target=progress*(video.duration||0);
+    if(!raf){ raf=true; requestAnimationFrame(tick); }
+  }
+  function tick(){
+    var cur=video.currentTime, diff=target-cur;
+    if(Math.abs(diff)<0.005){ raf=false; return; }
+    try{ video.currentTime = cur + diff*0.2; }catch(e){}
+    requestAnimationFrame(tick);
+  }
+  window.addEventListener('scroll', compute, {passive:true});
+  if(video.readyState>=1) compute();
+  else video.addEventListener('loadedmetadata', compute);
+})();
+</script>
+</body>
+</html>
