@@ -32,7 +32,8 @@ const ENTER_NOTIFY_CONFIRM = onlyNative(FadeIn.duration(200));
 
 export default function MatchStep() {
   const router = useRouter();
-  const { serviceType, bookingType, matchedProviderId, setMatchedProvider } = useBookingStore();
+  const { serviceType, bookingType, matchedProviderId, quoteAmountCents, setMatchedProvider } =
+    useBookingStore();
   const userId = useAuthStore((s) => s.user)?.id ?? null;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -107,6 +108,15 @@ export default function MatchStep() {
     rationaleScale.value = withSpring(1, { damping: 13, stiffness: 140 });
     rationaleOpacity.value = withSpring(1, { damping: 16, stiffness: 130 });
   };
+
+  // A booking from an accepted custom-job quote already has its provider chosen. Skip
+  // the re-match step entirely — it only searches the local ZIP shortlist and would drop
+  // a quoted pro who isn't in it (and lose the agreed price). Go straight to details.
+  useEffect(() => {
+    if (matchedProviderId && quoteAmountCents != null) {
+      router.replace('/(homeowner)/booking/details');
+    }
+  }, [matchedProviderId, quoteAmountCents, router]);
 
   // One-tap rehire: if the homeowner arrived with a pro pre-chosen, pre-select it.
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Crosshair } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { Button } from '../../../components/ui/Button';
@@ -21,6 +21,9 @@ interface Coords {
 
 export default function ServiceAreaStep() {
   const router = useRouter();
+  // Launched from the profile tab as a standalone edit (vs the first-run wizard) — used
+  // to return to the profile instead of marching on into banking → the profile step.
+  const isEdit = useLocalSearchParams<{ edit?: string }>().edit === '1';
   const serviceArea = useProviderOnboardingStore((s) => s.serviceArea);
   const setServiceArea = useProviderOnboardingStore((s) => s.setServiceArea);
   const business = useProviderOnboardingStore((s) => s.business);
@@ -144,7 +147,13 @@ export default function ServiceAreaStep() {
         setProviderId(pid);
       }
       await saveServiceArea(pid, zip.trim(), radius);
-      router.push('/(provider)/onboarding/banking');
+      // Standalone edit: the area is saved — return to the profile instead of pushing
+      // on into banking → the blank profile step (which would dead-end / risk a wipe).
+      if (isEdit) {
+        router.back();
+      } else {
+        router.push('/(provider)/onboarding/banking');
+      }
     } catch (err: unknown) {
       Alert.alert(
         "Couldn't save your setup",

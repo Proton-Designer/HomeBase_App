@@ -22,6 +22,19 @@ Method: 17 subsystem finder agents cross-referenced **actual code vs expected be
 | P2-today-1 / P5-earnings-1 | HIGH | **Payout fee math.** Added `completion_ledger.net_cents` (migration + backfill), updated the `mock-payments` edge fn (v2) to store the real net at capture, and the Today KPI + Earnings history now read it (10% sub / 17.5% one-off) instead of a flat 90%. *Remaining: the "potential" estimate on not-yet-completed upcoming jobs in today.tsx still uses 90% — needs `booking_type` on the jobs query; minor (an estimate).* |
 | H4-postjob-1 | HIGH | Accepted custom-quote amount now threads through (`bookingStore.quoteAmountCents`) so payment charges the agreed quote, not the provider's generic range midpoint. |
 
+
+### Additional fixes (batch 3 — completes ALL critical + high):
+| ID | Sev | What was fixed |
+|---|---|---|
+| H4-postjob-2 | HIGH | Booking match step now skips the local-shortlist re-match for a quote-sourced booking (provider + agreed price preserved into details). |
+| P1-onboarding-2 | HIGH | "Service area" edit from the profile tab passes `edit=1` and returns via `router.back()` instead of marching into banking → the (now-hydrated) profile step. |
+| H5-subs-1 | HIGH | change-frequency now persists the recomputed monthly estimate **and** a recomputed next_date. |
+| H5-subs-2 | MED | resume advances a paused-past next_date instead of showing a stale/past date. |
+| P6-1 / P6-2 | MED/LOW | Provider profile hero + "Your numbers" tile gate the numeric trust on the honest threshold (checkInCount ≥ 3 & overall > 0) → cold-start shows "New to MyHomebase"/"—", never a fake "0.0". |
+
+**Status: 1 critical + 9 high + 5 medium/low fixed (15 total), all tsc-clean.**
+All 9 HIGH findings are now resolved. Remaining: mediums/lows (see lists above) + the durable server-side completion_ledger guarantee.
+
 ### Still open after this session (recommend next):
 - **H5-subs-1** (change-frequency recompute of estimate + next_date — best as a server-side trigger)
 - **P1-onboarding-2** (service-area edit nav: router.back vs onboarding→banking + hydrate zip/radius)

@@ -83,10 +83,24 @@ export async function pause(id: string): Promise<void> {
 }
 
 export async function resume(id: string): Promise<void> {
-  const { error } = await supabase
+  const patch: Record<string, unknown> = {
+    status: 'active',
+    resumed_at: new Date().toISOString(),
+  };
+  // If the subscription was paused past its scheduled next visit, advance next_date so a
+  // resumed sub never shows a stale/past date. Preserve a still-future next_date.
+  const { data: sub } = await supabase
     .from('subscriptions')
-    .update({ status: 'active', resumed_at: new Date().toISOString() })
-    .eq('id', id);
+    .select('frequency, next_date')
+    .eq('id', id)
+    .maybeSingle();
+  const today = new Date().toISOString().slice(0, 10);
+  if (sub && (!sub.next_date || (sub.next_date as string) < today)) {
+    const next = new Date();
+    next.setDate(next.getDate() + FREQUENCY_INTERVAL_DAYS[sub.frequency as Frequency]);
+    patch.next_date = next.toISOString().slice(0, 10);
+  }
+  const { error } = await supabase.from('subscriptions').update(patch).eq('id', id);
   if (error) throw error;
 }
 
@@ -102,10 +116,29 @@ export async function cancel(id: string, reason?: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function changeFrequency(id: string, frequency: Frequency): Promise<void> {
-  const { error } = await supabase
-    .from('subscriptions')
-    .update({ frequency })
-    .eq('id', id);
+const FREQUENCY_INTERVAL_DAYS: Record<Frequency, number> = {
+  weekly: 7,
+  biweekly: 14,
+  monthly: 30,
+  quarterly: 91,
+  semi_annual: 182,
+};
+
+export async function changeFrequency(
+  id: string,
+  frequency: Frequency,
+  monthlyEstimateCents?: number,
+): Promise<void> {
+  // Persist the recomputed monthly estimate (the caller derives it from per-visit price)
+  // and advance next_date to one cadence interval out — otherwise the new frequency
+  // shows a stale price and a next date that no longer matches the cadence.
+  const next = new Date();
+  next.setDate(next.getDate() + FREQUENCY_INTERVAL_DAYS[frequency]);
+  const patch: Record<string, unknown> = {
+    frequency,
+    next_date: next.toISOString().slice(0, 10),
+  };
+  if (monthlyEstimateCents != null) patch.monthly_estimate_cents = monthlyEstimateCents;
+  const { error } = await supabase.from('subscriptions').update(patch).eq('id', id);
   if (error) throw error;
 }

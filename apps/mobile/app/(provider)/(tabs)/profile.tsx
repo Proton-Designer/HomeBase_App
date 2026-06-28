@@ -22,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/Card';
 import { Section } from '../../../components/ui/Section';
 import { TrustSummary, VerificationBadge, QueryErrorState } from '../../../components/shared';
+import { RATING_MIN_REVIEWS } from '../../../components/shared/TrustSummary';
 import { useAuthStore } from '../../../stores/authStore';
 import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular, fonts } from '../../../tokens';
@@ -280,12 +281,20 @@ export default function ProviderProfileScreen() {
       }
     : null;
 
-  const overallTrust = trustScores
-    ? trustScores.reliability * 0.35 +
-      trustScores.quality * 0.35 +
-      trustScores.communication * 0.2 +
-      trustScores.professionalism * 0.1
-    : null;
+  // Only surface a numeric trust score once it's real — same honest threshold the
+  // TrustSummary / match card use. A brand-new provider (compositeScore defaults to 0)
+  // must show "New to MyHomebase"/"—", never a fabricated "0.0 composite trust".
+  const hasRealTrust =
+    (providerData?.checkInCount ?? 0) >= RATING_MIN_REVIEWS &&
+    (providerData?.compositeScore.overall ?? 0) > 0;
+
+  const overallTrust =
+    trustScores && hasRealTrust
+      ? trustScores.reliability * 0.35 +
+        trustScores.quality * 0.35 +
+        trustScores.communication * 0.2 +
+        trustScores.professionalism * 0.1
+      : null;
 
   const businessName = providerData?.businessName ?? providerData?.name ?? profile?.firstName ?? 'Your business';
   const displayInitial = businessName.charAt(0).toUpperCase();
@@ -375,7 +384,12 @@ export default function ProviderProfileScreen() {
           <SettingsRow
             label="Service area"
             Icon={Briefcase}
-            onPress={() => router.push('/(provider)/onboarding/service-area')}
+            onPress={() =>
+              router.push({
+                pathname: '/(provider)/onboarding/service-area',
+                params: { edit: '1' },
+              })
+            }
           />
           <SettingsRow
             label="Availability"

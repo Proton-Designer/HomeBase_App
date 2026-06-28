@@ -199,7 +199,11 @@ export default function SubscriptionDetailScreen() {
     if (!pendingFreq || !sub) return;
     setIsActing(true);
     try {
-      await api.changeFrequency(id ?? '', pendingFreq);
+      await api.changeFrequency(
+        id ?? '',
+        pendingFreq,
+        recalcMonthly(sub.monthlyEstimateCents, sub.frequency, pendingFreq),
+      );
       await invalidate();
       freqSheetRef.current?.dismiss();
       Alert.alert('Frequency updated', `Now set to ${FREQUENCY_LABELS[pendingFreq]}.`);
