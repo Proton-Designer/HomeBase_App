@@ -91,9 +91,15 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
     return () => clearTimeout(timer);
   }, [serverMessages, jobId, currentUserId]);
 
+  // Keep a ref so the realtime closure always sees the latest userId without
+  // needing to re-subscribe when auth state changes.
+  const currentUserIdRef = useRef(currentUserId);
+  useEffect(() => { currentUserIdRef.current = currentUserId; }, [currentUserId]);
+
   // ─── Realtime subscription ────────────────────────────────────────────────
   useEffect(() => {
     if (!jobId) return;
+    let markReadTimer: ReturnType<typeof setTimeout> | null = null;
     const unsub = subscribeToMessages(
       jobId,
       (incoming) => {
@@ -103,13 +109,22 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
         if (incoming.clientId) {
           setPending((p) => p.filter((m) => m.clientId !== incoming.clientId));
         }
+        // Message from other party while thread is open — debounce markRead so
+        // the unread count clears without hammering the server on burst sends.
+        if (incoming.fromUserId !== currentUserIdRef.current) {
+          if (markReadTimer) clearTimeout(markReadTimer);
+          markReadTimer = setTimeout(() => void markRead(jobId), 500);
+        }
       },
       (_messageId) => {
         // Other party marked our message as read — refetch for fresh readAt stamps.
         void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
       },
     );
-    return unsub;
+    return () => {
+      unsub();
+      if (markReadTimer) clearTimeout(markReadTimer);
+    };
   }, [jobId, queryClient]);
 
   // ─── Pagination ──────────────────────────────────────────────────────────

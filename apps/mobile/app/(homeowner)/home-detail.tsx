@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Home, CircleCheck, Bell, MapPin } from 'lucide-react-native';
+import { ChevronLeft, Home, CircleCheck, Bell, MapPin, DollarSign } from 'lucide-react-native';
 import { useSafeBack } from '../../lib/useSafeBack';
 import { useAuthStore } from '../../stores/authStore';
 import { fetchPrimaryAddress } from '../../lib/api/addresses';
@@ -100,7 +100,7 @@ export default function HomeDetailScreen() {
 
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <StatCard icon={CircleCheck} value={String(completions.length)} label="Services done" />
-          <StatCard icon={Bell} value={`$${(totalSpend / 100).toFixed(0)}`} label="Total invested" />
+          <StatCard icon={DollarSign} value={`$${(totalSpend / 100).toFixed(0)}`} label="Total invested" />
         </View>
 
         {interests.length > 0 ? (

@@ -35,6 +35,7 @@ export default function JobDetailScreen() {
   const qc = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [checkInOpen, setCheckInOpen] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   const { data: job, isLoading: jobLoading, isError: jobError, refetch: refetchJob } = useQuery({
     queryKey: ['jobs', id],
@@ -102,7 +103,7 @@ export default function JobDetailScreen() {
 
   const completedAt = job.timestamps.completed ? new Date(job.timestamps.completed) : null;
   const within48h = completedAt && Date.now() - completedAt.getTime() < 48 * 60 * 60 * 1000;
-  const checkInEligible = job.status === 'completed' && within48h;
+  const checkInEligible = job.status === 'completed' && within48h && !reviewSubmitted;
   const m = STATUS_TONE[job.status];
   const serviceLabel = SERVICE_LABEL[job.serviceType] ?? 'Service';
 
@@ -287,6 +288,7 @@ export default function JobDetailScreen() {
               professionalism: s.professionalism,
               photoPath: s.photoPath ?? null,
             });
+            setReviewSubmitted(true);
             qc.invalidateQueries({ queryKey: ['jobs', job.id] });
             qc.invalidateQueries({ queryKey: ['jobs'] });
           }}

@@ -480,7 +480,7 @@ export function AdaptiveHero({
   if (job && !reminderOutranksBooking) {
     return <NextBookingCard job={job} onPressJob={onPressJob} />;
   }
-  if (topReminder && onBookReminder && onHandledReminder) {
+  if (topReminder && topReminder.status !== 'recommended' && onBookReminder && onHandledReminder) {
     return (
       <MaintenanceCard
         reminder={topReminder}

@@ -85,7 +85,7 @@ function SubscriptionRow({ sub, index }: { sub: Subscription; index: number }) {
                     color: colors.textPrimary,
                   }}
                 >
-                  {sub.providerName[0].toUpperCase()}
+                  {(sub.providerName.trim()[0] ?? '?').toUpperCase()}
                 </Text>
               )}
             </View>

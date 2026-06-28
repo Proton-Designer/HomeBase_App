@@ -39,15 +39,14 @@ export default function AddressSetupScreen() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const onContinue = (values: FormValues) => {
-    if (!coords) return;
     setPendingHomeownerSetup({
       street: values.street,
       city: values.city,
       state: values.state,
       zip: values.zip,
       neighborhood: values.neighborhood?.trim() || null,
-      lat: coords.lat,
-      lng: coords.lng,
+      lat: coords?.lat ?? null,
+      lng: coords?.lng ?? null,
     });
     router.push('/(auth)/service-interest');
   };
@@ -82,7 +81,21 @@ export default function AddressSetupScreen() {
               setCoords({ lat: s.lat, lng: s.lng });
               void trigger();
             }}
-            errorMessage={formState.errors.street?.message}
+          />
+          <Controller
+            control={control}
+            name="street"
+            render={({ field, fieldState }) => (
+              <Input
+                label="Street address"
+                placeholder="123 Main St"
+                value={field.value}
+                onChangeText={field.onChange}
+                onBlur={field.onBlur}
+                autoCapitalize="words"
+                errorMessage={fieldState.error?.message}
+              />
+            )}
           />
           <Controller
             control={control}
@@ -159,7 +172,7 @@ export default function AddressSetupScreen() {
             label="Continue"
             size="lg"
             fullWidth
-            disabled={!formState.isValid || !coords}
+            disabled={!formState.isValid}
             onPress={handleSubmit(onContinue)}
           />
         </Animated.View>

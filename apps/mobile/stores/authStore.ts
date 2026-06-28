@@ -190,7 +190,8 @@ export const useAuthStore = create<AuthState>()(
           // from persisted role after a bounded wait.
           const bootTimeout = setTimeout(() => {
             if (get().status === 'bootstrapping') {
-              set({ status: get().role ? 'authenticated' : 'unauthenticated' });
+              const { session, user } = get();
+              set({ status: session && user ? 'authenticated' : 'unauthenticated' });
             }
           }, 8000);
 
@@ -268,6 +269,9 @@ export const useAuthStore = create<AuthState>()(
           if (isExistingEmail) {
             const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email });
             // A fully-confirmed account can't be issued a signup code → it truly exists.
+            // Do NOT treat rate-limit errors as "already registered": a rate-limited
+            // resend can't distinguish a confirmed account from an unconfirmed/abandoned
+            // one, and routing the latter to sign-in strands it. Rate-limited → verify.
             if (resendErr && /confirm|registered|already/i.test(resendErr.message)) {
               return {
                 error: new Error('This email is already registered. Please sign in instead.'),

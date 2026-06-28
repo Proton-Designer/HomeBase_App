@@ -333,3 +333,17 @@ Live-validated on sim: app boots (blue brand ✅), password sign-in ✅, home da
 ## Uncertain (needs product call, not bugs)
 - H2-hero-4 — Hero has no 'action required' state (quotes/proposed-time/check-in never surface in hero). Likely deferred feature.
 - H3-booking-6 — Step-1 estimated price can diverge from amount charged. Depends on intended pricing model.
+
+---
+## ✅ BATCH 4 — remaining findings (subagent-driven, 10 parallel implementers + opus review)
+
+48 remaining findings dispatched across 10 file-disjoint background subagents, then a single opus correctness review over the combined diff (verdict: SAFE TO COMMIT). All tsc-clean.
+
+Highlights: claims evidence photos now use signed URLs + id-keyed upload slots (H6-claims-1/2/3); messaging realtime mark-read + cached-thread initial scroll (X1-messaging-1/2/3); notification deep-links for provider+homeowner+tech (X2-notifications-1/2/3, X3-shared-1); provider earnings payout gating — no sub-fee/negative/permanently-disabled cash-out (P5-earnings-2/3/4); schedule per-day block sheet + start<end validation + today-anchored blocked list (P4-schedule-2/3/4); `providers.is_active` → `valid_to is null` (H5-subs-3/P7-customjob-2); acceptQuote per-step error handling + posting `complete()` (H4-postjob-3/4); booking detail/service-select stubs wired or removed (H3-booking-*); dead `onboarding/availability.tsx` deleted (P1-onboarding-4); tech earnings relabeled + completion-date windowed (X3-shared-2/3); subscriptions cancelled-state gating + avatar crash guard (H5-subs-4/5); Book search secureTextEntry removed (DYN-1); + more.
+
+Review-driven correction: reverted pkgH's `rate|too.many` resend-regex (would strand unconfirmed accounts) back to verify-fallback.
+
+### Deferred (deliberate, not done autonomously):
+- **H1-auth-3** proper fix — add an "already registered? sign in" escape on the verify-email screen (the regex approach was reverted as a regression).
+- **H7-jobs-1 / durable completion_ledger guarantee** — server-side trigger or edge-fn transaction so the ledger write can't be lost on a transient capture failure (cross-table, security-definer, check_in_passed semantics — wants deliberate design).
+- **Minor UX**: address-setup now shows a manual street field below the autocomplete (functional; tidy later). reminders badge count vs hero filter drift (cosmetic).

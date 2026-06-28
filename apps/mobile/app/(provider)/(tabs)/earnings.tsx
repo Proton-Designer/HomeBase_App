@@ -102,12 +102,6 @@ export default function ProviderEarningsScreen() {
 
   const queryClient = useQueryClient();
 
-  const shimmer = useSharedValue(1);
-  useEffect(() => {
-    shimmer.value = withRepeat(withTiming(0.75, { duration: 1200 }), -1, true);
-  }, [shimmer]);
-  const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
-
   const sheetOffset = useSharedValue(500);
   const overlayOpacity = useSharedValue(0);
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetOffset.value }] }));
@@ -162,7 +156,17 @@ export default function ProviderEarningsScreen() {
 
   const balanceCents = balanceData?.balanceCents ?? 0;
   const payoutFee = Math.max(50, Math.round(balanceCents * 0.01));
-  const youReceive = balanceCents - payoutFee;
+  const youReceive = Math.max(0, balanceCents - payoutFee);
+
+  const shimmer = useSharedValue(1);
+  useEffect(() => {
+    if (balanceCents > 0) {
+      shimmer.value = withRepeat(withTiming(0.75, { duration: 1200 }), -1, true);
+    } else {
+      shimmer.value = withTiming(1, { duration: 200 });
+    }
+  }, [shimmer, balanceCents]);
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
 
   const openSheet = () => {
     setShowSheet(true);
@@ -176,7 +180,7 @@ export default function ProviderEarningsScreen() {
     setTimeout(() => setShowSheet(false), 290);
   };
 
-  const { mutate: triggerPayout, isPending: payoutPending, isSuccess: payoutDone } = useMutation({
+  const { mutate: triggerPayout, isPending: payoutPending } = useMutation({
     mutationFn: () => payments.instantPayout({ amountCents: balanceCents }),
     onSuccess: () => {
       closeSheet();
@@ -218,8 +222,6 @@ export default function ProviderEarningsScreen() {
       Toast.show({ type: 'error', text1: 'Could not start bank setup', text2: 'Please try again.' });
     }
   };
-
-  const balanceIsZero = balanceCents === 0;
 
   const earnings = earningsData ?? [];
 
@@ -329,13 +331,13 @@ export default function ProviderEarningsScreen() {
 
       <Pressable
         onPress={openSheet}
-        disabled={payoutDone || balanceIsZero || !bankAccount?.connected}
+        disabled={balanceCents <= payoutFee || !bankAccount?.connected}
         style={({ pressed }) => ({
           backgroundColor: pressed ? colors.primary[800] : colors.primary[700],
           borderRadius: 12,
           paddingVertical: 14,
           paddingHorizontal: 20,
-          opacity: payoutDone || balanceIsZero || !bankAccount?.connected ? 0.5 : 1,
+          opacity: balanceCents <= payoutFee || !bankAccount?.connected ? 0.5 : 1,
           transform: [{ scale: pressed && Platform.OS !== 'web' ? 0.985 : 1 }],
           ...(Platform.OS === 'web' ? { cursor: 'pointer' } as object : {}),
         })}
@@ -350,7 +352,7 @@ export default function ProviderEarningsScreen() {
             letterSpacing: 0.2,
           } as TextStyle}
         >
-          {payoutDone ? 'Payout initiated' : 'Cash out · Instant payout'}
+          {'Cash out · Instant payout'}
         </Text>
         <Text
           style={{

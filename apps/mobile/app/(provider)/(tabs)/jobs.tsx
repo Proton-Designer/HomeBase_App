@@ -28,6 +28,10 @@ import type { Job, ProviderJobRequest, ServiceType } from '../../../lib/types';
 
 type Segment = 'requests' | 'active' | 'completed';
 
+function netPayout(amountCents: number): number {
+  return Math.round(amountCents * 0.9);
+}
+
 function JobStatusPill({ status, scheduledAt }: { status: string; scheduledAt: string }) {
   const timeAgo = formatDistanceToNow(new Date(scheduledAt), { addSuffix: true });
   const toneMap: Record<string, { bg: string; text: string }> = {
@@ -147,7 +151,7 @@ export default function ProviderJobsScreen() {
           serviceType: row.service_type as string,
           scheduledAt: row.scheduled_at as string,
           neighborhood: (address?.neighborhood as string) ?? '',
-          payoutCents: (row.amount_cents as number) ?? 0,
+          payoutCents: netPayout((row.amount_cents as number) ?? 0),
         } as ProviderJobRequest;
       });
       setRequests(rows);
@@ -242,8 +246,10 @@ export default function ProviderJobsScreen() {
   function assignedTechName(jobId: string): string | null {
     const techUserId = assignments[jobId];
     if (!techUserId) return null;
-    const tech = activeTechs.find((t) => t.userId === techUserId);
-    return tech ? `${tech.firstName} ${tech.lastName}` : null;
+    const tech = crewMembers.find((t) => t.userId === techUserId);
+    if (!tech) return null;
+    const name = `${tech.firstName} ${tech.lastName}`;
+    return tech.status === 'removed' ? `${name} (removed)` : name;
   }
 
   return (
@@ -382,7 +388,7 @@ export default function ProviderJobsScreen() {
               activeJobs.map((job, i) => {
                 const homeownerName = (job.homeownerName as string | undefined) ?? 'Homeowner';
                 const homeownerLastInitial = (job.homeownerLastInitial as string | undefined) ?? '';
-                const payoutCents = Math.round(((job.amountCents as number) ?? 0) * 0.9);
+                const payoutCents = netPayout((job.amountCents as number) ?? 0);
                 return (
                   <Animated.View key={job.id as string} entering={enterStaggered(i)}>
                     <Card style={{ gap: 10 }}>
@@ -519,7 +525,7 @@ export default function ProviderJobsScreen() {
             ) : (
               completedJobs.map((job, i) => {
                 const homeownerName = (job.homeownerName as string | undefined) ?? 'Homeowner';
-                const payoutCents = Math.round(((job.amountCents as number) ?? 0) * 0.9);
+                const payoutCents = netPayout((job.amountCents as number) ?? 0);
                 return (
                   <Animated.View key={job.id as string} entering={enterStaggered(i)}>
                     <Card>

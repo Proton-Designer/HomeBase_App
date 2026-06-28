@@ -198,16 +198,29 @@ export async function acceptQuote(input: {
   postingId: string;
   providerId: string;
 }): Promise<void> {
-  await supabase.from('posting_quotes').update({ status: 'accepted' }).eq('id', input.quoteId);
-  await supabase
+  const { error: e1 } = await supabase
+    .from('posting_quotes')
+    .update({ status: 'accepted' })
+    .eq('id', input.quoteId);
+  if (e1) throw e1;
+  const { error: e2 } = await supabase
     .from('posting_quotes')
     .update({ status: 'declined' })
     .eq('posting_id', input.postingId)
     .neq('id', input.quoteId);
-  const { error } = await supabase
+  if (e2) throw e2;
+  const { error: e3 } = await supabase
     .from('postings')
     .update({ status: 'matched', matched_provider_id: input.providerId })
     .eq('id', input.postingId);
+  if (e3) throw e3;
+}
+
+export async function complete(postingId: string): Promise<void> {
+  const { error } = await supabase
+    .from('postings')
+    .update({ status: 'completed' })
+    .eq('id', postingId);
   if (error) throw error;
 }
 

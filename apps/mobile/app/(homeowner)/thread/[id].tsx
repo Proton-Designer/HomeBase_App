@@ -194,6 +194,7 @@ export default function ThreadScreen() {
   const contentHeightRef = useRef(0);
   const layoutHeightRef = useRef(0);
   const prevMsgCountRef = useRef(messages.length);
+  const didInitialScrollRef = useRef(false);
 
   const isAtBottom = useCallback(() => {
     return (
@@ -201,15 +202,22 @@ export default function ThreadScreen() {
     );
   }, []);
 
-  // Scroll to end on mount (no animation), on new message arrival conditionally.
+  // Initial scroll fires via onContentSizeChange so it works whether the list
+  // starts from cache (non-zero count at mount) or from a fresh fetch.
+  const handleContentSizeChange = useCallback(() => {
+    if (didInitialScrollRef.current) return;
+    didInitialScrollRef.current = true;
+    flatListRef.current?.scrollToEnd({ animated: false });
+  }, []);
+
+  // Handle new messages arriving while the thread is open.
   useEffect(() => {
     if (messages.length === 0) return;
-
-    if (prevMsgCountRef.current === 0) {
-      // Initial load — scroll without animation.
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
-    } else if (messages.length > prevMsgCountRef.current) {
-      // New message arrived.
+    if (!didInitialScrollRef.current) {
+      prevMsgCountRef.current = messages.length;
+      return;
+    }
+    if (messages.length > prevMsgCountRef.current) {
       if (isAtBottom()) {
         flatListRef.current?.scrollToEnd({ animated: true });
       } else {
@@ -356,6 +364,7 @@ export default function ThreadScreen() {
               paddingBottom: 24,
               paddingTop: 12,
             }}
+            onContentSizeChange={handleContentSizeChange}
             onScroll={handleScroll}
             scrollEventThrottle={16}
             refreshControl={

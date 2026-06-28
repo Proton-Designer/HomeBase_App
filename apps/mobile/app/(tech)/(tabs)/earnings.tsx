@@ -22,7 +22,11 @@ export default function TechEarningsScreen() {
 
   const completed = allJobs
     .filter((j) => j.status === 'completed')
-    .sort((a, b) => (a.scheduledAt < b.scheduledAt ? 1 : -1));
+    .sort((a, b) => {
+      const aTime = a.timestamps?.completed ?? a.scheduledAt;
+      const bTime = b.timestamps?.completed ?? b.scheduledAt;
+      return aTime < bTime ? 1 : -1;
+    });
 
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
@@ -30,10 +34,10 @@ export default function TechEarningsScreen() {
   weekAgo.setDate(weekAgo.getDate() - 7);
 
   const todayCents = completed
-    .filter((j) => new Date(j.scheduledAt) >= startOfToday)
+    .filter((j) => new Date(j.timestamps?.completed ?? j.scheduledAt) >= startOfToday)
     .reduce((acc, j) => acc + j.amountCents, 0);
   const weekCents = completed
-    .filter((j) => new Date(j.scheduledAt) >= weekAgo)
+    .filter((j) => new Date(j.timestamps?.completed ?? j.scheduledAt) >= weekAgo)
     .reduce((acc, j) => acc + j.amountCents, 0);
 
   return (
@@ -63,7 +67,7 @@ export default function TechEarningsScreen() {
 
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <Card style={{ flex: 1 }}>
-            <Eyebrow>Today</Eyebrow>
+            <Eyebrow>Today · job value</Eyebrow>
             <Text
               style={{
                 ...textStyles['editorial-title'],
@@ -78,7 +82,7 @@ export default function TechEarningsScreen() {
             </Text>
           </Card>
           <Card style={{ flex: 1 }}>
-            <Eyebrow>This week</Eyebrow>
+            <Eyebrow>This week · job value</Eyebrow>
             <Text
               style={{
                 ...textStyles['editorial-title'],
@@ -150,17 +154,17 @@ export default function TechEarningsScreen() {
                       marginTop: 2,
                     }}
                   >
-                    {format(new Date(job.scheduledAt), 'MMM d')}
+                    {format(new Date(job.timestamps?.completed ?? job.scheduledAt), 'MMM d')}
                   </Text>
                 </View>
                 <Text
                   style={{
                     ...textStyles['title-md'],
                     ...numericTabular,
-                    color: colors.success,
+                    color: colors.textSecondary,
                   }}
                 >
-                  +${(job.amountCents / 100).toFixed(2)}
+                  ${(job.amountCents / 100).toFixed(2)} job value
                 </Text>
               </View>
             ))}

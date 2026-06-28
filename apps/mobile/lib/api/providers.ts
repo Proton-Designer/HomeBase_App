@@ -264,10 +264,14 @@ export async function getPriceFloors(): Promise<Partial<Record<ServiceType, numb
   const { data, error } = await supabase
     .from('providers')
     .select('service_types, price_range_min_cents')
-    .eq('is_active', true)
+    .is('valid_to', null)
     .not('price_range_min_cents', 'is', null);
 
-  if (error || !data) return {};
+  if (error) {
+    console.error('getPriceFloors:', error);
+    return {};
+  }
+  if (!data) return {};
 
   const floors: Partial<Record<ServiceType, number>> = {};
   for (const row of data as { service_types: string[]; price_range_min_cents: number }[]) {

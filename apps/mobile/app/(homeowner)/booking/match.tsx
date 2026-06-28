@@ -41,7 +41,7 @@ export default function MatchStep() {
   const [notifyRequested, setNotifyRequested] = useState(false);
 
   // Resolve homeowner ZIP from primary address.
-  const { data: primaryAddress, isLoading: addressIsLoading } = useQuery({
+  const { data: primaryAddress, isLoading: addressIsLoading, refetch: refetchAddress } = useQuery({
     queryKey: ['addresses', 'primary', userId],
     queryFn: () => fetchPrimaryAddress(userId!),
     enabled: !!userId,
@@ -208,6 +208,7 @@ export default function MatchStep() {
           ctaLabel="Retry"
           onCta={() => {
             setTimedOut(false);
+            void refetchAddress();
             void refetch();
           }}
         />

@@ -122,14 +122,14 @@ export default function HomeDashboardScreen() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: completions = [] } = useQuery({
+  const { data: completions = [], isLoading: completionsLoading } = useQuery({
     queryKey: ['completions', 'homeowner', userId],
     queryFn: () => api.completions.fetchHomeownerCompletions(userId!),
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: serviceStatuses = [] } = useQuery({
+  const { data: serviceStatuses = [], isLoading: serviceStatusesLoading } = useQuery({
     queryKey: ['home-service-status', userId],
     queryFn: () => api.homeServiceStatus.fetchStatuses(userId!),
     enabled: !!userId,
@@ -158,6 +158,15 @@ export default function HomeDashboardScreen() {
         now: new Date(),
       }),
     [address?.serviceInterests, completions, serviceStatuses],
+  );
+
+  const bookedServiceTypes = useMemo(
+    () => new Set(jobs.filter((j) => ACTIVE_STATUSES.includes(j.status)).map((j) => j.serviceType)),
+    [jobs],
+  );
+  const topReminder = useMemo(
+    () => reminders.find((r) => !bookedServiceTypes.has(r.serviceType)) ?? null,
+    [reminders, bookedServiceTypes],
   );
 
   const stats = {
@@ -369,7 +378,7 @@ export default function HomeDashboardScreen() {
 
         {/* Adaptive hero: live job → next booking → nudge */}
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-          {(jobsLoading || bookingsLoading || !userId) && !primaryJob ? (
+          {(jobsLoading || bookingsLoading || completionsLoading || serviceStatusesLoading || !userId) && !primaryJob ? (
             <SkeletonLoader width="100%" height={150} borderRadius={16} />
           ) : (
             <AdaptiveHero
@@ -377,7 +386,7 @@ export default function HomeDashboardScreen() {
               isLive={live}
               onPressJob={(jobId) => router.push(`/(homeowner)/job/${jobId}`)}
               nudge={nudge}
-              topReminder={reminders[0] ?? null}
+              topReminder={topReminder}
               onBookReminder={(svc) => startBooking(svc, 'reminder')}
               onHandledReminder={markReminderHandled}
               onOpenReminders={() => router.push('/(homeowner)/reminders')}

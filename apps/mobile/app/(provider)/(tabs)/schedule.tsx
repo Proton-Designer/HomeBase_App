@@ -64,11 +64,8 @@ export default function ProviderScheduleScreen() {
   // ── sheet refs ────────────────────────────────────────────────────────────────
   const blockTimeSheetRef = useRef<BlockTimeSheetHandle>(null);
   const availabilitySheetRef = useRef<AvailabilitySheetHandle>(null);
-  const [blockPreFillDate, setBlockPreFillDate] = useState<Date>(SESSION_TODAY);
-
   function openBlockSheet(date: Date) {
-    setBlockPreFillDate(date);
-    blockTimeSheetRef.current?.present();
+    blockTimeSheetRef.current?.present(date);
   }
 
   // ── jobs query ───────────────────────────────────────────────────────────────
@@ -89,9 +86,9 @@ export default function ProviderScheduleScreen() {
     staleTime: 60_000,
   });
 
-  // ── blocked times query (current week + 4 weeks ahead for the upcoming list) ─
-  const blocksFrom = weekStart.toISOString();
-  const blocksTo = addDays(weekStart, 35).toISOString(); // 5 weeks from week start
+  // ── blocked times query (today + 90 days, independent of week view) ─────────
+  const blocksFrom = SESSION_TODAY.toISOString();
+  const blocksTo = addDays(SESSION_TODAY, 90).toISOString();
 
   const {
     data: blockedTimes = [],
@@ -234,7 +231,7 @@ export default function ProviderScheduleScreen() {
       <BlockTimeSheet
         ref={blockTimeSheetRef}
         providerId={providerId}
-        prefilledDate={blockPreFillDate}
+        prefilledDate={SESSION_TODAY}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ['blocked-times', providerId] });
         }}

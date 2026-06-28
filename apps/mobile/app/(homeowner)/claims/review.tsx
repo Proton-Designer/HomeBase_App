@@ -167,16 +167,16 @@ export default function ClaimReviewStep() {
           </Text>
         </Card>
 
-        {draft.photoUrls.length > 0 ? (
+        {draft.photoLocalUris.length > 0 ? (
           <View style={{ gap: 8 }}>
             <Text style={{ ...textStyles.label, color: colors.textTertiary }}>
               Attached photos
             </Text>
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-              {draft.photoUrls.map((url, i) => (
+              {draft.photoLocalUris.map((uri, i) => (
                 <Image
                   key={i}
-                  source={{ uri: url }}
+                  source={{ uri }}
                   style={{ width: 80, height: 80, borderRadius: 10 }}
                 />
               ))}

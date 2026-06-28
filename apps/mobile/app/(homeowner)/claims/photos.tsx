@@ -11,6 +11,7 @@ import { colors, textStyles } from '../../../tokens';
 const MAX_PHOTOS = 6;
 
 interface PhotoSlot {
+  id: string;
   localUri: string;
   path: string | null;
   uploading: boolean;
@@ -20,6 +21,7 @@ export default function ClaimPhotosStep() {
   const router = useRouter();
   const addPhoto = useClaimStore((s) => s.addPhoto);
   const removePhoto = useClaimStore((s) => s.removePhoto);
+  const photoUrls = useClaimStore((s) => s.draft.photoUrls);
 
   const claimTempId = useRef<string>(
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -43,27 +45,28 @@ export default function ClaimPhotosStep() {
       );
       return;
     }
-    const idx = slots.length;
-    const storagePath = `${claimTempId}/${Date.now()}-${idx}.jpg`;
-    const newSlot: PhotoSlot = { localUri: asset.uri, path: null, uploading: true };
+    const slotId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const storagePath = `${claimTempId}/${slotId}.jpg`;
+    const newSlot: PhotoSlot = { id: slotId, localUri: asset.uri, path: null, uploading: true };
     setSlots((prev) => [...prev, newSlot]);
     try {
       const result = await uploadAsset('claim-photos', storagePath, asset);
       setSlots((prev) =>
-        prev.map((s, i) =>
-          i === idx ? { ...s, path: result.path, uploading: false } : s,
-        ),
+        prev.map((s) => s.id === slotId ? { ...s, path: result.path, uploading: false } : s),
       );
-      addPhoto(result.path);
+      addPhoto(result.path, asset.uri);
     } catch (err: unknown) {
       Alert.alert('Upload failed', err instanceof Error ? err.message : 'Could not upload photo.');
-      setSlots((prev) => prev.filter((_, i) => i !== idx));
+      setSlots((prev) => prev.filter((s) => s.id !== slotId));
     }
   };
 
-  const handleRemove = (i: number) => {
-    setSlots((prev) => prev.filter((_, idx) => idx !== i));
-    removePhoto(i);
+  const handleRemove = (slotId: string) => {
+    const slot = slots.find((s) => s.id === slotId);
+    if (!slot?.path) return;
+    const idx = photoUrls.indexOf(slot.path);
+    setSlots((prev) => prev.filter((s) => s.id !== slotId));
+    if (idx !== -1) removePhoto(idx);
   };
 
   const displaySlots = Array.from({ length: MAX_PHOTOS }, (_, i) => slots[i] ?? null);
@@ -113,7 +116,7 @@ export default function ClaimPhotosStep() {
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {displaySlots.map((slot, i) => (
-            <View key={i} style={{ width: '30%', aspectRatio: 1 }}>
+            <View key={slot?.id ?? i} style={{ width: '30%', aspectRatio: 1 }}>
               {slot ? (
                 <View style={{ flex: 1 }}>
                   <Image
@@ -140,7 +143,8 @@ export default function ClaimPhotosStep() {
                     </View>
                   ) : (
                     <Pressable
-                      onPress={() => handleRemove(i)}
+                      onPress={() => handleRemove(slot.id)}
+                      disabled={anyUploading}
                       hitSlop={6}
                       style={[
                         {

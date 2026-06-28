@@ -87,7 +87,7 @@ export default function PostingDetailScreen() {
       },
     ]);
   };
-  const onSchedule = () => {
+  const onSchedule = async () => {
     if (!posting) return;
     resetBooking();
     setServiceType(posting.serviceType);
@@ -98,6 +98,13 @@ export default function PostingDetailScreen() {
     // to, not the provider's generic range midpoint.
     const acceptedQuote = quotes.find((q) => q.status === 'accepted');
     setQuoteAmount(acceptedQuote?.amountCents ?? null);
+    // Mark the posting completed so the CTA cannot trigger a second booking.
+    try {
+      await api.postings.complete(id ?? '');
+      queryClient.invalidateQueries({ queryKey: ['postings', 'detail', id] });
+    } catch {
+      // Non-fatal: proceed to booking even if the status update fails
+    }
     router.push({ pathname: '/(homeowner)/booking/service-select', params: { service: posting.serviceType } });
   };
 

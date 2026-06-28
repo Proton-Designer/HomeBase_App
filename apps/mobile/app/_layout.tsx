@@ -93,7 +93,11 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
         sub = Notifications.addNotificationResponseReceivedListener(() => {
           const role = useAuthStore.getState().role;
           const path =
-            role === 'provider_owner' ? '/(provider)/notifications' : '/(homeowner)/notifications';
+            role === 'provider_owner'
+              ? '/(provider)/notifications'
+              : role === 'provider_tech'
+              ? '/(tech)/(tabs)/today'
+              : '/(homeowner)/notifications';
           router.push(path as never);
         });
       } catch {

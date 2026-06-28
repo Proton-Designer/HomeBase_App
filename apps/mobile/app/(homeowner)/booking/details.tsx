@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView, Pressable, Image, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, X, MapPin } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
+import * as ImagePicker from 'expo-image-picker';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -21,7 +22,16 @@ export default function DetailsStep() {
     setInstructions,
     setPhoto,
   } = useBookingStore();
-  const [savePref, setSavePref] = useState(true);
+  const handlePhotoCapture = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setPhoto(result.assets[0].uri);
+    }
+  };
 
   return (
     <View testID="booking-step-details" style={{ flex: 1 }}>
@@ -139,9 +149,7 @@ export default function DetailsStep() {
           ) : (
             <Pressable
               testID="booking-details-photo-capture"
-              onPress={() => {
-                /* Photo picker wired by booking-and-checkin agent */
-              }}
+              onPress={() => void handlePhotoCapture()}
               style={[
                 {
                   height: 96,
@@ -165,34 +173,6 @@ export default function DetailsStep() {
           )}
         </View>
 
-        <Pressable
-          testID="booking-details-save-pref-toggle"
-          onPress={() => setSavePref((s) => !s)}
-          style={[
-            { flexDirection: 'row', alignItems: 'center', gap: 12 },
-            Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null,
-          ]}
-        >
-          <View
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              backgroundColor: savePref ? colors.primary[600] : colors.surface,
-              borderWidth: 1.5,
-              borderColor: savePref ? colors.primary[600] : colors.border,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {savePref ? (
-              <Text style={{ color: colors.textInverse, fontSize: 13, fontWeight: '700' }}>✓</Text>
-            ) : null}
-          </View>
-          <Text style={{ ...textStyles['body-md'], color: colors.textPrimary }}>
-            Save these instructions for future bookings
-          </Text>
-        </Pressable>
       </ScrollView>
       <View
         style={{

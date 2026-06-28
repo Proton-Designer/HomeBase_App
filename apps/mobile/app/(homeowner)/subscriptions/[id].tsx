@@ -443,17 +443,7 @@ export default function SubscriptionDetailScreen() {
           </Text>
 
           <DetailRow label="Frequency">
-            <Pressable
-              onPress={() => {
-                setPendingFreq(sub.frequency);
-                freqSheetRef.current?.present();
-              }}
-              hitSlop={6}
-              style={[
-                { flexDirection: 'row', alignItems: 'center', gap: 4 },
-                Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null,
-              ]}
-            >
+            {sub.status === 'cancelled' ? (
               <Text
                 style={{
                   ...textStyles['body-md'],
@@ -463,16 +453,38 @@ export default function SubscriptionDetailScreen() {
               >
                 {FREQUENCY_LABELS[sub.frequency]}
               </Text>
-              <Text
-                style={{
-                  ...textStyles['body-sm'],
-                  color: colors.primary[600],
-                  fontFamily: 'Inter_600SemiBold',
+            ) : (
+              <Pressable
+                onPress={() => {
+                  setPendingFreq(sub.frequency);
+                  freqSheetRef.current?.present();
                 }}
+                hitSlop={6}
+                style={[
+                  { flexDirection: 'row', alignItems: 'center', gap: 4 },
+                  Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null,
+                ]}
               >
-                Change
-              </Text>
-            </Pressable>
+                <Text
+                  style={{
+                    ...textStyles['body-md'],
+                    fontFamily: 'Inter_600SemiBold',
+                    color: colors.textPrimary,
+                  }}
+                >
+                  {FREQUENCY_LABELS[sub.frequency]}
+                </Text>
+                <Text
+                  style={{
+                    ...textStyles['body-sm'],
+                    color: colors.primary[600],
+                    fontFamily: 'Inter_600SemiBold',
+                  }}
+                >
+                  Change
+                </Text>
+              </Pressable>
+            )}
           </DetailRow>
 
           <DetailRow label="Next visit">

@@ -223,6 +223,7 @@ export default function BookEntryScreen() {
               clearButtonMode="never"
               autoCorrect={false}
               autoCapitalize="none"
+              secureTextEntry={false}
               accessibilityLabel="Search services"
             />
           </View>

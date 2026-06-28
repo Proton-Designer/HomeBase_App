@@ -220,40 +220,11 @@ export default function CrewListScreen() {
                     style={{ alignItems: 'center', gap: 6 }}
                     accessibilityLabel={`View ${tech.firstName}'s profile`}
                   >
-                    <View style={{ position: 'relative' }}>
-                      <AvatarCircle
-                        uri={tech.avatarUrl}
-                        name={tech.firstName}
-                        size={56}
-                      />
-                      {(tech.todayJobCount ?? 0) > 0 && (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            top: -2,
-                            right: -2,
-                            backgroundColor: colors.primary[600],
-                            borderRadius: 10,
-                            minWidth: 18,
-                            height: 18,
-                            paddingHorizontal: 4,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Text
-                            style={{
-                              ...textStyles['body-sm'],
-                              fontFamily: 'Inter_700Bold',
-                              fontSize: 10,
-                              color: colors.textInverse,
-                            }}
-                          >
-                            {tech.todayJobCount}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
+                    <AvatarCircle
+                      uri={tech.avatarUrl}
+                      name={tech.firstName}
+                      size={56}
+                    />
                     <Text
                       style={{
                         ...textStyles['body-sm'],

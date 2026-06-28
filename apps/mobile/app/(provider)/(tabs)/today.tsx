@@ -273,7 +273,7 @@ function PressableJobRow({
 
 export default function ProviderTodayScreen() {
   const router = useRouter();
-  const { providerId, onboardingComplete } = useAuthStore();
+  const { user, providerId, onboardingComplete } = useAuthStore();
   const [checkInJobId, setCheckInJobId] = useState<string | null>(null);
   const [checkInPayoutCents, setCheckInPayoutCents] = useState(0);
   const isDesktop = useBreakpoint() === 'desktop';
@@ -309,9 +309,9 @@ export default function ProviderTodayScreen() {
   });
 
   const { data: unreadNotifications = 0 } = useQuery({
-    queryKey: ['notifications', 'unread', providerId],
+    queryKey: ['notifications', 'unread', user?.id],
     queryFn: () => notificationsApi.unreadCount(),
-    enabled: !!providerId,
+    enabled: !!user?.id,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });

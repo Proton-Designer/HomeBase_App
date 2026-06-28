@@ -37,7 +37,7 @@ function buildISO(date: Date, time: Date): string {
 }
 
 export interface BlockTimeSheetHandle {
-  present: () => void;
+  present: (date?: Date) => void;
   dismiss: () => void;
 }
 
@@ -79,9 +79,8 @@ export const BlockTimeSheet = forwardRef<BlockTimeSheetHandle, BlockTimeSheetPro
     }
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        // Sync pre-filled date
-        const base = prefilledDate;
+      present: (date?: Date) => {
+        const base = date ?? prefilledDate;
         setBlockDate(base);
         setStartTime(makeStartDefault(base));
         setEndTime(makeEndDefault(base));

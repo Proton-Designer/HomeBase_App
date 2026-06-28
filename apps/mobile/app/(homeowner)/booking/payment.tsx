@@ -47,6 +47,7 @@ export default function PaymentStep() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
   const bp = useBreakpoint();
   const isWebDesktop = Platform.OS === 'web' && bp === 'desktop';
 
@@ -124,18 +125,23 @@ export default function PaymentStep() {
     setSubmitting(true);
     setError(null);
     try {
-      const booking = await bookings.create({
-        serviceType: (serviceType ?? 'lawn') as ServiceType,
-        bookingType: bookingType ?? 'one_off',
-        frequency: frequency ?? null,
-        scheduledAt: scheduledAt?.toISOString() ?? new Date().toISOString(),
-        addressId: addressId!,
-        specialInstructions: specialInstructions || undefined,
-        photoUrl: photoUrl ?? undefined,
-        matchedProviderId: provider?.id ?? matchedProviderId ?? '',
-        amountCents: totalCents,
-      });
-      await payments.createIntent({ bookingId: booking.id });
+      let id = bookingId;
+      if (!id) {
+        const booking = await bookings.create({
+          serviceType: (serviceType ?? 'lawn') as ServiceType,
+          bookingType: bookingType ?? 'one_off',
+          frequency: frequency ?? null,
+          scheduledAt: scheduledAt?.toISOString() ?? new Date().toISOString(),
+          addressId: addressId!,
+          specialInstructions: specialInstructions || undefined,
+          photoUrl: photoUrl ?? undefined,
+          matchedProviderId: provider?.id ?? matchedProviderId ?? '',
+          amountCents: totalCents,
+        });
+        id = booking.id;
+        setBookingId(id);
+      }
+      await payments.createIntent({ bookingId: id });
       router.replace('/(homeowner)/booking/confirmation');
     } catch {
       setError('Something went wrong. Please try again.');

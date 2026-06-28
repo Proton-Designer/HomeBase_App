@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -80,7 +80,7 @@ export default function ServiceSelectStep() {
   const missingAddress = !addressId;
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const [subscriptionSectionY, setSubscriptionSectionY] = useState(0);
+  const subscriptionSectionY = useRef(0);
 
   // Pre-fill service from catalog deep-link param (runs once on mount).
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function ServiceSelectStep() {
     // After selection, auto-scroll to the booking-type sub-section (slight delay
     // so the layout flush happens before scrollTo fires).
     setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ y: subscriptionSectionY, animated: true });
+      scrollViewRef.current?.scrollTo({ y: subscriptionSectionY.current, animated: true });
     }, 80);
   };
 
@@ -308,7 +308,7 @@ export default function ServiceSelectStep() {
           <Animated.View
             entering={onlyNative(FadeIn.duration(220))}
             style={{ gap: 14 }}
-            onLayout={(e) => setSubscriptionSectionY(e.nativeEvent.layout.y)}
+            onLayout={(e) => { subscriptionSectionY.current = e.nativeEvent.layout.y; }}
           >
             <Text style={{ ...textStyles['title-lg'], color: colors.textPrimary }}>
               How would you like to book?

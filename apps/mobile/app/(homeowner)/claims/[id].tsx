@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -22,6 +22,7 @@ import { Pill, type PillTone } from '../../../components/ui/Pill';
 import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { SkeletonLoader, QueryErrorState } from '../../../components/shared';
 import * as claimsApi from '../../../lib/api/claims';
+import { getSignedUrl } from '../../../lib/api/storage';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import { enter } from '../../../lib/motion';
 import type { ClaimStatus, IncidentType, ResolutionKind } from '../../../lib/types';
@@ -172,6 +173,20 @@ export default function ClaimDetailScreen() {
     enabled: !!id,
   });
 
+  const [signedPhotoUrls, setSignedPhotoUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!claim?.photoUrls.length) {
+      setSignedPhotoUrls([]);
+      return;
+    }
+    let cancelled = false;
+    Promise.all(claim.photoUrls.map((path) => getSignedUrl('claim-photos', path))).then((urls) => {
+      if (!cancelled) setSignedPhotoUrls(urls.filter((u): u is string => u !== null));
+    });
+    return () => { cancelled = true; };
+  }, [claim?.photoUrls]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <View
@@ -297,7 +312,7 @@ export default function ClaimDetailScreen() {
               </Text>
             </Card>
 
-            {claim.photoUrls.length > 0 ? (
+            {signedPhotoUrls.length > 0 ? (
               <View style={{ gap: 10 }}>
                 <Text style={{ ...textStyles.label, color: colors.textTertiary }}>
                   Attached photos
@@ -307,7 +322,7 @@ export default function ClaimDetailScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ gap: 10 }}
                 >
-                  {claim.photoUrls.map((url, i) => (
+                  {signedPhotoUrls.map((url, i) => (
                     <Image
                       key={i}
                       source={{ uri: url }}

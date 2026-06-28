@@ -76,6 +76,7 @@ export function computeReminders(input: {
     if (!st) return false;
     if (st.state === 'self_managed' || st.state === 'not_applicable') return true;
     if (st.snoozedUntil && new Date(st.snoozedUntil).getTime() > nowTs) return true;
+    if ((st.dismissCount ?? 0) >= 2) return true;
     return false;
   };
   const cadenceFor = (svc: ServiceType): number =>

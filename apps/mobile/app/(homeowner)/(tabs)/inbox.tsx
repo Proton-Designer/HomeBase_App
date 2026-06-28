@@ -415,6 +415,8 @@ export default function InboxScreen() {
     queryKey: ['threads', 'homeowner', homeownerId],
     queryFn: () => listThreadsForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);

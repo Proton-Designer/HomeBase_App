@@ -29,17 +29,23 @@ export default function ProviderPostingDetailScreen() {
     queryFn: () => postingsApi.listMyQuotes(providerId ?? ''),
     enabled: !!providerId,
   });
-  const existing = myQuotes.find((q) => q.postingId === id);
+  const existing = myQuotes.find(
+    (q) => q.postingId === id && (q.status === 'sent' || q.status === 'accepted'),
+  );
 
   const [amount, setAmount] = useState(existing?.amountCents ? String(existing.amountCents / 100) : '');
   const [message, setMessage] = useState(existing?.message ?? '');
   const [submitting, setSubmitting] = useState(false);
 
+  const isOpen = posting?.status === 'open';
+
   const onSubmit = async () => {
-    if (!providerId || !id || submitting) return;
+    if (!providerId || !id || submitting || !isOpen) return;
     setSubmitting(true);
     try {
-      const cents = amount.trim() ? Math.round(parseFloat(amount) * 100) : null;
+      const parsed = parseFloat(amount);
+      const cents =
+        amount.trim() && Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) : null;
       await postingsApi.submitQuote({ postingId: id, providerId, amountCents: cents, message: message.trim() || null });
       queryClient.invalidateQueries({ queryKey: ['provider', 'my-quotes', providerId] });
       queryClient.invalidateQueries({ queryKey: ['provider', 'open-postings', providerId] });
@@ -94,65 +100,83 @@ export default function ProviderPostingDetailScreen() {
 
             <View style={{ height: 1, backgroundColor: colors.divider }} />
 
-            <Text style={{ ...textStyles['title-md'], color: colors.textPrimary }}>
-              {existing ? 'Update your quote' : 'Send a quote'}
-            </Text>
-
-            <View style={{ gap: 6 }}>
-              <Text style={{ ...textStyles.label, color: colors.textSecondary }}>Your price (optional)</Text>
+            {!isOpen ? (
               <View
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 16,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  backgroundColor: colors.surface,
                 }}
               >
-                <Text style={{ ...textStyles['title-md'], color: colors.textSecondary }}>$</Text>
-                <TextInput
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="decimal-pad"
-                  placeholder="0"
-                  placeholderTextColor={colors.textTertiary}
-                  style={{ flex: 1, paddingVertical: 12, fontFamily: fonts.body, fontSize: 16, color: colors.textPrimary }}
-                />
+                <Text style={{ ...textStyles['body-md'], color: colors.textSecondary }}>
+                  This request is no longer open.
+                </Text>
               </View>
-            </View>
+            ) : (
+              <>
+                <Text style={{ ...textStyles['title-md'], color: colors.textPrimary }}>
+                  {existing ? 'Update your quote' : 'Send a quote'}
+                </Text>
 
-            <View style={{ gap: 6 }}>
-              <Text style={{ ...textStyles.label, color: colors.textSecondary }}>Message to the homeowner</Text>
-              <TextInput
-                value={message}
-                onChangeText={setMessage}
-                multiline
-                placeholder="Introduce yourself and how you'd approach this job…"
-                placeholderTextColor={colors.textTertiary}
-                style={{
-                  minHeight: 100,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  padding: 14,
-                  fontFamily: fonts.body,
-                  fontSize: 15,
-                  color: colors.textPrimary,
-                  textAlignVertical: 'top',
-                  backgroundColor: colors.surface,
-                }}
-              />
-            </View>
+                <View style={{ gap: 6 }}>
+                  <Text style={{ ...textStyles.label, color: colors.textSecondary }}>Your price (optional)</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: 12,
+                      paddingHorizontal: 14,
+                      backgroundColor: colors.surface,
+                    }}
+                  >
+                    <Text style={{ ...textStyles['title-md'], color: colors.textSecondary }}>$</Text>
+                    <TextInput
+                      value={amount}
+                      onChangeText={setAmount}
+                      keyboardType="decimal-pad"
+                      placeholder="0"
+                      placeholderTextColor={colors.textTertiary}
+                      style={{ flex: 1, paddingVertical: 12, fontFamily: fonts.body, fontSize: 16, color: colors.textPrimary }}
+                    />
+                  </View>
+                </View>
 
-            <Button
-              label={existing ? 'Update quote' : 'Send quote'}
-              size="lg"
-              fullWidth
-              loading={submitting}
-              onPress={onSubmit}
-            />
+                <View style={{ gap: 6 }}>
+                  <Text style={{ ...textStyles.label, color: colors.textSecondary }}>Message to the homeowner</Text>
+                  <TextInput
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    placeholder="Introduce yourself and how you'd approach this job…"
+                    placeholderTextColor={colors.textTertiary}
+                    style={{
+                      minHeight: 100,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: 12,
+                      padding: 14,
+                      fontFamily: fonts.body,
+                      fontSize: 15,
+                      color: colors.textPrimary,
+                      textAlignVertical: 'top',
+                      backgroundColor: colors.surface,
+                    }}
+                  />
+                </View>
+
+                <Button
+                  label={existing ? 'Update quote' : 'Send quote'}
+                  size="lg"
+                  fullWidth
+                  loading={submitting}
+                  onPress={onSubmit}
+                />
+              </>
+            )}
           </>
         ) : (
           <Text style={{ ...textStyles['body-md'], color: colors.textSecondary }}>Loading…</Text>

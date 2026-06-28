@@ -8,6 +8,7 @@ interface ClaimDraft {
   incidentType: IncidentType | null;
   description: string;
   photoUrls: string[];
+  photoLocalUris: string[];
   requestedResolution: ResolutionKind | null;
   requestedAmountCents: number | null;
 }
@@ -18,6 +19,7 @@ const initialDraft: ClaimDraft = {
   incidentType: null,
   description: '',
   photoUrls: [],
+  photoLocalUris: [],
   requestedResolution: null,
   requestedAmountCents: null,
 };
@@ -28,7 +30,7 @@ interface ClaimState {
   setJobContext: (ctx: { jobId: string; providerId: string }) => void;
   setIncidentType: (t: IncidentType) => void;
   setDescription: (d: string) => void;
-  addPhoto: (url: string) => void;
+  addPhoto: (path: string, localUri: string) => void;
   removePhoto: (idx: number) => void;
   setResolution: (kind: ResolutionKind) => void;
   setAmountCents: (n: number | null) => void;
@@ -40,7 +42,12 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
   draft: initialDraft,
 
   setJobContext: ({ jobId, providerId }) =>
-    set((s) => ({ draft: { ...s.draft, jobId, providerId } })),
+    set((s) => {
+      if (s.draft.jobId !== null && s.draft.jobId !== jobId) {
+        return { draft: { ...initialDraft, jobId, providerId } };
+      }
+      return { draft: { ...s.draft, jobId, providerId } };
+    }),
 
   setIncidentType: (t) =>
     set((s) => ({ draft: { ...s.draft, incidentType: t } })),
@@ -48,14 +55,22 @@ export const useClaimStore = create<ClaimState>((set, get) => ({
   setDescription: (d) =>
     set((s) => ({ draft: { ...s.draft, description: d } })),
 
-  addPhoto: (url) =>
+  addPhoto: (path, localUri) =>
     set((s) => ({
-      draft: { ...s.draft, photoUrls: [...s.draft.photoUrls, url].slice(0, 6) },
+      draft: {
+        ...s.draft,
+        photoUrls: [...s.draft.photoUrls, path].slice(0, 6),
+        photoLocalUris: [...s.draft.photoLocalUris, localUri].slice(0, 6),
+      },
     })),
 
   removePhoto: (idx) =>
     set((s) => ({
-      draft: { ...s.draft, photoUrls: s.draft.photoUrls.filter((_, i) => i !== idx) },
+      draft: {
+        ...s.draft,
+        photoUrls: s.draft.photoUrls.filter((_, i) => i !== idx),
+        photoLocalUris: s.draft.photoLocalUris.filter((_, i) => i !== idx),
+      },
     })),
 
   setResolution: (kind) =>

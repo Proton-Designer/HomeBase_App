@@ -3,6 +3,8 @@ import { NotificationCenter } from '../../components/notifications/NotificationC
 import type { AppNotification } from '../../lib/api/notifications';
 
 function resolveHref(n: AppNotification): string | null {
+  const threadId = n.data?.threadId as string | undefined;
+  if (threadId) return `/(homeowner)/thread/${threadId}`;
   const jobId = n.data?.jobId as string | undefined;
   if (jobId) return `/(homeowner)/job/${jobId}`;
   const postingId = n.data?.postingId as string | undefined;

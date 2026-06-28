@@ -307,6 +307,10 @@ export const AvailabilitySheet = forwardRef<AvailabilitySheetHandle, Availabilit
                 setFormError('Select at least one day.');
                 return;
               }
+              if (dateToHMS(endTime) <= dateToHMS(startTime)) {
+                setFormError('End must be after start');
+                return;
+              }
               saveMutation.mutate();
             }}
             disabled={noDaysSelected || saveMutation.isPending}

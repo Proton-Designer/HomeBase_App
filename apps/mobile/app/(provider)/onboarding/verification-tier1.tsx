@@ -144,7 +144,7 @@ export default function VerificationTier1Step() {
               marginTop: 6,
             }}
           >
-            MyHomebase requires a background check on every provider. Takes 3–5 business days.
+            Verified providers earn more trust and unlock higher-value jobs. Upload your ID to start the background check — takes 3–5 business days.
           </Text>
         </View>
 
