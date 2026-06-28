@@ -196,23 +196,35 @@ export const useAuthStore = create<AuthState>()(
           }, 8000);
 
           try {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) throw error;
+            const { data } = await supabase.auth.getSession();
             if (data.session) {
-              await applySession(data.session);
+              // getSession() only reads storage — it returns a persisted session WITHOUT
+              // surfacing an error even when its refresh token is stale (e.g. minted by a
+              // since-rebuilt/rotated Supabase project → "Invalid Refresh Token: Refresh
+              // Token Not Found"). Validate against the server before trusting it; on any
+              // auth error, purge the bad token so it can't fail on every subsequent boot.
+              const { error: validateErr } = await supabase.auth.getUser();
+              if (validateErr) {
+                try {
+                  await supabase.auth.signOut({ scope: 'local' });
+                } catch {
+                  // best-effort purge — fall through to unauthenticated regardless
+                }
+                setHasSupabaseSession(false);
+                set({ status: 'unauthenticated' });
+              } else {
+                await applySession(data.session);
+              }
             } else {
               setHasSupabaseSession(false);
               set({ status: 'unauthenticated' });
             }
           } catch {
-            // A stored session whose refresh token the server rejects (e.g. a token
-            // minted by a since-rebuilt Supabase project → "Invalid Refresh Token:
-            // Refresh Token Not Found"). Purge it locally so it can't fail again on
-            // every subsequent boot, then land cleanly on the unauthenticated screen.
+            // getSession itself threw (rare) — purge and land unauthenticated.
             try {
               await supabase.auth.signOut({ scope: 'local' });
             } catch {
-              // best-effort purge — fall through to unauthenticated regardless
+              // best-effort
             }
             setHasSupabaseSession(false);
             set({ status: 'unauthenticated' });
