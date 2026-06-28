@@ -10,9 +10,8 @@ import { useAuthStore } from '../../../stores/authStore';
 import { useProviderOnboardingStore } from '../../../stores/providerOnboardingStore';
 import { supabase } from '../../../lib/supabase';
 import { pickImageFromLibrary, uploadAsset } from '../../../lib/api/storage';
+import { lookupGooglePlace } from '../../../lib/api/providers';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-
-const MAX_BIO = 300;
 
 interface PortfolioItem {
   uri: string;
@@ -28,9 +27,9 @@ export default function ProviderProfileStep() {
 
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [bio, setBio] = useState('');
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
+  const [website, setWebsite] = useState('');
+  const [googleBusiness, setGoogleBusiness] = useState('');
+  const [startingPrice, setStartingPrice] = useState('');
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -46,17 +45,16 @@ export default function ProviderProfileStep() {
     (async () => {
       const { data } = await supabase
         .from('providers')
-        .select('avatar_url, bio, price_range_min_cents, price_range_max_cents, portfolio_photos')
+        .select('avatar_url, website_url, google_business_url, price_range_min_cents, portfolio_photos')
         .eq('owner_user_id', userId)
         .maybeSingle();
       if (cancelled) return;
       if (data) {
         if (data.avatar_url) setAvatar(data.avatar_url);
-        if (data.bio) setBio(data.bio);
+        if (data.website_url) setWebsite(data.website_url);
+        if (data.google_business_url) setGoogleBusiness(data.google_business_url);
         if (data.price_range_min_cents)
-          setPriceMin(String(Math.round(data.price_range_min_cents / 100)));
-        if (data.price_range_max_cents)
-          setPriceMax(String(Math.round(data.price_range_max_cents / 100)));
+          setStartingPrice(String(Math.round(data.price_range_min_cents / 100)));
         if (Array.isArray(data.portfolio_photos) && data.portfolio_photos.length > 0) {
           setPortfolio(
             (data.portfolio_photos as string[]).map((url) => ({
@@ -142,21 +140,32 @@ export default function ProviderProfileStep() {
         .map((p) => p.publicUrl ?? p.uri)
         .filter(Boolean);
 
-      const minDollars = parseFloat(priceMin);
-      const maxDollars = parseFloat(priceMax);
+      const startDollars = parseFloat(startingPrice);
+      const websiteTrim = website.trim();
+      const googleTrim = googleBusiness.trim();
 
-      // Prices are collected in dollars/visit; the column stores cents.
+      // Resolve the Google Business page → rating + review count (stored in external_*).
+      // Best-effort: returns nulls when no/invalid Places key, so it never blocks finish.
+      const place = googleTrim ? await lookupGooglePlace(googleTrim) : null;
+
       // `onboarding_completed_at` is the authoritative completion signal routing reads.
+      const patch: Record<string, unknown> = {
+        avatar_url: avatar,
+        website_url: websiteTrim || null,
+        google_business_url: googleTrim || null,
+        price_range_min_cents: Number.isFinite(startDollars) ? Math.round(startDollars * 100) : 0,
+        portfolio_photos: portfolioUrls,
+        onboarding_completed_at: new Date().toISOString(),
+      };
+      if (place) {
+        patch.google_place_id = place.placeId;
+        patch.external_rating = place.rating;
+        patch.external_review_count = place.reviewCount;
+        patch.external_source = 'google';
+      }
       const { data: updated, error: providerErr } = await supabase
         .from('providers')
-        .update({
-          avatar_url: avatar,
-          bio,
-          price_range_min_cents: Number.isFinite(minDollars) ? Math.round(minDollars * 100) : 0,
-          price_range_max_cents: Number.isFinite(maxDollars) ? Math.round(maxDollars * 100) : 0,
-          portfolio_photos: portfolioUrls,
-          onboarding_completed_at: new Date().toISOString(),
-        })
+        .update(patch)
         .eq('owner_user_id', userId)
         .select('id')
         .maybeSingle();
@@ -251,56 +260,48 @@ export default function ProviderProfileStep() {
 
         <View>
           <Input
-            label="Bio"
-            placeholder="Tell homeowners about your experience, approach, what makes you stand out…"
-            multiline
-            value={bio}
-            onChangeText={(t) => (t.length <= MAX_BIO ? setBio(t) : null)}
-            helperText={`${bio.length}/${MAX_BIO}`}
+            label="Website (optional)"
+            placeholder="https://yourbusiness.com"
+            keyboardType="url"
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={website}
+            onChangeText={setWebsite}
           />
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Input
-              label="Min price/visit"
-              placeholder="45"
-              keyboardType="numeric"
-              value={priceMin}
-              onChangeText={setPriceMin}
-              leftIcon={
-                <Text
-                  style={{
-                    ...textStyles['body-md'],
-                    fontFamily: 'Inter_500Medium',
-                    color: colors.textSecondary,
-                  }}
-                >
-                  $
-                </Text>
-              }
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Input
-              label="Max price/visit"
-              placeholder="95"
-              keyboardType="numeric"
-              value={priceMax}
-              onChangeText={setPriceMax}
-              leftIcon={
-                <Text
-                  style={{
-                    ...textStyles['body-md'],
-                    fontFamily: 'Inter_500Medium',
-                    color: colors.textSecondary,
-                  }}
-                >
-                  $
-                </Text>
-              }
-            />
-          </View>
+        <View>
+          <Input
+            label="Google Business page (optional)"
+            placeholder="Paste your Google Business / Maps link"
+            keyboardType="url"
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={googleBusiness}
+            onChangeText={setGoogleBusiness}
+            helperText="We'll show your Google rating and review count on your profile."
+          />
+        </View>
+
+        <View>
+          <Input
+            label="Typical starting price / visit (optional)"
+            placeholder="45"
+            keyboardType="numeric"
+            value={startingPrice}
+            onChangeText={setStartingPrice}
+            leftIcon={
+              <Text
+                style={{
+                  ...textStyles['body-md'],
+                  fontFamily: 'Inter_500Medium',
+                  color: colors.textSecondary,
+                }}
+              >
+                $
+              </Text>
+            }
+          />
         </View>
 
         <Card tone="tinted" tintColor={colors.primary[50]}>
@@ -321,7 +322,8 @@ export default function ProviderProfileStep() {
               marginTop: 4,
             }}
           >
-            Providers with portfolio photos receive 3x more bookings.
+            Providers with portfolio photos receive 3x more bookings. You can also add these
+            later from your profile.
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
             {portfolio.map((item, i) => (

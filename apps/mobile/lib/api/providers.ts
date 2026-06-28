@@ -1,5 +1,32 @@
 import { supabase } from '../supabase';
+import { invokeFn } from './functions';
 import type { Provider, ServiceType, VerificationTier } from '../types';
+
+/**
+ * Resolve a provider's Google Business page → rating + review count via the
+ * google-place-lookup edge function. Best-effort: returns null when no/invalid Places
+ * key is configured (the feature stays inert until a valid key is added), so callers
+ * can store the URL regardless and skip the external_* fields.
+ */
+export async function lookupGooglePlace(
+  input: string,
+): Promise<{ placeId: string | null; rating: number | null; reviewCount: number | null } | null> {
+  try {
+    const data = await invokeFn<{
+      placeId?: string | null;
+      rating?: number | null;
+      reviewCount?: number | null;
+    }>('google-place-lookup', { query: input });
+    if (!data || (data.rating == null && data.reviewCount == null && !data.placeId)) return null;
+    return {
+      placeId: data.placeId ?? null,
+      rating: data.rating ?? null,
+      reviewCount: data.reviewCount ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 type DbProviderRow = {
   id: string;

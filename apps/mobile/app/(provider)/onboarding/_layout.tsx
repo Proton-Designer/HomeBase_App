@@ -15,18 +15,18 @@ import { colors, textStyles, numericTabular } from '../../../tokens';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 
 const STEPS = [
-  'welcome',
   'business',
+  'verify-phone',
+  'services',
   'service-area',
-  'banking',
   'profile',
 ] as const;
 
 const STEP_LABELS: Record<string, string> = {
-  welcome: 'Welcome',
   business: 'Business info',
+  'verify-phone': 'Verify phone',
+  services: 'Services',
   'service-area': 'Service area',
-  banking: 'Banking',
   profile: 'Public profile',
 };
 

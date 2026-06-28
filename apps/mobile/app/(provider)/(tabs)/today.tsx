@@ -895,7 +895,7 @@ export default function ProviderTodayScreen() {
         {"You won't receive job requests or appear to homeowners until your setup is complete."}
       </Text>
       <Pressable
-        onPress={() => router.push('/(provider)/onboarding/welcome')}
+        onPress={() => router.push('/(provider)/onboarding/business')}
         style={{
           backgroundColor: colors.primary[700],
           borderRadius: 12,

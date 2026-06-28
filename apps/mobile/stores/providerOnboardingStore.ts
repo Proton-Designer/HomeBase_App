@@ -37,7 +37,7 @@ interface ProviderOnboardingState {
 const makeInitial = () => ({
   business: {
     businessName: '',
-    serviceTypes: ['lawn'],
+    serviceTypes: [],
     yearsInBusiness: null,
     employees: null,
     phone: '',

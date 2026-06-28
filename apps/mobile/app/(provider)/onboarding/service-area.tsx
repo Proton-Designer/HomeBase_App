@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
+import { Slider } from '../../../components/ui/Slider';
 import { ServiceAreaMap } from '../../../components/maps/ServiceAreaMap';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import { useProviderOnboardingStore } from '../../../stores/providerOnboardingStore';
@@ -32,6 +33,7 @@ export default function ServiceAreaStep() {
   const authProviderId = useAuthStore((s) => s.providerId);
   const [zip, setZip] = useState(serviceArea.zip);
   const [radius, setRadius] = useState(serviceArea.radiusMiles);
+  const [customMode, setCustomMode] = useState(!RADII.includes(serviceArea.radiusMiles));
   const [submitting, setSubmitting] = useState(false);
 
   const [coords, setCoords] = useState<Coords | null>(null);
@@ -128,13 +130,28 @@ export default function ServiceAreaStep() {
     setSubmitting(true);
     try {
       setServiceArea({ zip: zip.trim(), radiusMiles: radius });
-      // This is now where the provider row is created (the availability step was
-      // removed — providers set availability per job at acceptance time instead).
-      // Guard against a duplicate onboard() — e.g. backing up from banking and
-      // re-continuing, or editing service-area post-onboarding — which would hit
-      // the providers UNIQUE(user) constraint and break the wizard.
-      let pid = existingProviderId ?? authProviderId;
-      if (!pid) {
+      // This is where the provider row is created/updated from the wizard. onboard() is
+      // idempotent (the edge fn updates an existing row or inserts a new one), so in the
+      // first-run flow we ALWAYS call it — otherwise a provider re-running onboarding (who
+      // already has a row) would have their Step 1/3 business info + services silently
+      // dropped. In standalone edit mode we skip it so stale store data can't overwrite the
+      // saved business info; we only resave the service area.
+      let pid = existingProviderId ?? authProviderId ?? null;
+      if (!isEdit) {
+        const res = await onboard({
+          businessDetails: {
+            businessName: business.businessName || 'My Business',
+            serviceTypes: business.serviceTypes,
+            yearsInBusiness: business.yearsInBusiness,
+            employees: business.employees,
+            phone: business.phone,
+          },
+          serviceArea: { radiusMiles: radius },
+          availability: {},
+        });
+        pid = res.providerId;
+        setProviderId(pid);
+      } else if (!pid) {
         const res = await onboard({
           businessDetails: {
             businessName: business.businessName || 'My Business',
@@ -152,7 +169,7 @@ export default function ServiceAreaStep() {
       if (isEdit) {
         router.back();
       } else {
-        router.push('/(provider)/onboarding/banking');
+        router.push('/(provider)/onboarding/profile');
       }
     } catch (err: unknown) {
       Alert.alert(
@@ -184,7 +201,7 @@ export default function ServiceAreaStep() {
         </View>
 
         <Input
-          label="Home zip code"
+          label="Zip Code"
           value={zip}
           onChangeText={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))}
           keyboardType="number-pad"
@@ -252,6 +269,42 @@ export default function ServiceAreaStep() {
               );
             })}
           </View>
+
+          <Pressable onPress={() => setCustomMode((v) => !v)} style={{ alignSelf: 'flex-start' }}>
+            <Text
+              style={{
+                ...textStyles['body-sm'],
+                fontFamily: 'Inter_600SemiBold',
+                color: colors.primary[600],
+              }}
+            >
+              {customMode ? '– Use a preset radius' : '+ Set a custom radius'}
+            </Text>
+          </Pressable>
+
+          {customMode ? (
+            <View style={{ gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <Slider min={1} max={50} value={radius} step={1} onChange={setRadius} />
+                </View>
+                <View style={{ width: 92 }}>
+                  <Input
+                    value={String(radius)}
+                    onChangeText={(v) => {
+                      const n = parseInt(v.replace(/\D/g, ''), 10);
+                      setRadius(Number.isFinite(n) ? Math.min(50, Math.max(1, n)) : 1);
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                  />
+                </View>
+              </View>
+              <Text style={{ ...textStyles['body-sm'], ...numericTabular, color: colors.textSecondary }}>
+                {radius} mile radius
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Interactive coverage map — recenters on the geocoded zip, circle scales with radius.
