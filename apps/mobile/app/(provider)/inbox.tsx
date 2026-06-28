@@ -263,6 +263,10 @@ export default function ProviderInboxScreen() {
     queryKey: ['threads', 'provider', providerId],
     queryFn: () => listThreadsForProvider(providerId ?? ''),
     enabled: !!providerId,
+    // Keep unread counts / previews fresh without a per-thread realtime sub (matches the
+    // homeowner inbox) — otherwise they're stale until the screen remounts.
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   // Before providerId resolves (or during first load) show skeleton rows —

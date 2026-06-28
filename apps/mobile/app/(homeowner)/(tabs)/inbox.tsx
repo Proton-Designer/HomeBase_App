@@ -27,6 +27,7 @@ import {
   type Thread,
   type Message,
 } from '../../../lib/api/messages';
+import { genClientId } from '../../../lib/messaging/useThreadMessages';
 import { subscribeToMessages } from '../../../lib/api/realtime';
 import { useAuthStore } from '../../../stores/authStore';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
@@ -299,7 +300,8 @@ function ThreadDetail({ jobId, otherPartyName }: { jobId: string; otherPartyName
   }, [jobId, queryClient]);
 
   const sendM = useMutation({
-    mutationFn: (body: string) => sendMessage({ jobId, body, fromRole: 'homeowner' }),
+    mutationFn: (body: string) =>
+      sendMessage({ jobId, body, fromRole: 'homeowner', clientId: genClientId() }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
       void queryClient.invalidateQueries({ queryKey: ['threads', 'homeowner'] });

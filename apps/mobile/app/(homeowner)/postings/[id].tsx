@@ -40,6 +40,8 @@ export default function PostingDetailScreen() {
   const setServiceType = useBookingStore((s) => s.setServiceType);
   const setMatchedProvider = useBookingStore((s) => s.setMatchedProvider);
   const setQuoteAmount = useBookingStore((s) => s.setQuoteAmount);
+  const setFromQuoteFlow = useBookingStore((s) => s.setFromQuoteFlow);
+  const [isScheduling, setIsScheduling] = React.useState(false);
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['posting-quotes', id],
@@ -88,23 +90,30 @@ export default function PostingDetailScreen() {
     ]);
   };
   const onSchedule = async () => {
-    if (!posting) return;
+    if (!posting || isScheduling) return;
+    setIsScheduling(true);
     resetBooking();
     setServiceType(posting.serviceType);
     // Carry the provider the homeowner just chose into the booking flow so the
     // match step doesn't re-run a generic search and lose them.
     if (posting.matchedProviderId) setMatchedProvider(posting.matchedProviderId);
     // Carry the accepted quote's price so payment charges what the homeowner agreed
-    // to, not the provider's generic range midpoint.
+    // to, not the provider's generic range midpoint (null for a price-free quote).
     const acceptedQuote = quotes.find((q) => q.status === 'accepted');
     setQuoteAmount(acceptedQuote?.amountCents ?? null);
-    // Mark the posting completed so the CTA cannot trigger a second booking.
+    setFromQuoteFlow(true);
+    // Optimistically flip the cached posting to 'completed' so the "Schedule" CTA hides
+    // immediately and a back-navigation can't trigger a second booking — even if the
+    // server complete() is slow or fails (the isScheduling guard covers the in-flight tap).
+    queryClient.setQueryData(['postings', 'detail', id], (prev: typeof posting | undefined) =>
+      prev ? { ...prev, status: 'completed' } : prev,
+    );
     try {
       await api.postings.complete(id ?? '');
-      queryClient.invalidateQueries({ queryKey: ['postings', 'detail', id] });
     } catch {
-      // Non-fatal: proceed to booking even if the status update fails
+      // Non-fatal: proceed to booking even if the status update fails.
     }
+    queryClient.invalidateQueries({ queryKey: ['postings', 'detail', id] });
     router.push({ pathname: '/(homeowner)/booking/service-select', params: { service: posting.serviceType } });
   };
 
@@ -341,7 +350,7 @@ export default function PostingDetailScreen() {
                 </Text>
               </View>
             </View>
-            <Button label="Schedule this job" fullWidth style={{ marginTop: 12 }} onPress={onSchedule} />
+            <Button label="Schedule this job" fullWidth style={{ marginTop: 12 }} loading={isScheduling} disabled={isScheduling} onPress={onSchedule} />
           </Card>
         ) : null}
 

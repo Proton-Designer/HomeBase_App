@@ -26,10 +26,9 @@ function mapJobListRow(row: unknown): Job {
   const r = row as Record<string, unknown>;
   const homeownerProfile =
     (r.profiles as { first_name?: string | null; last_name?: string | null } | null) ?? null;
-  const homeownerName = [homeownerProfile?.first_name, homeownerProfile?.last_name]
-    .filter(Boolean)
-    .join(' ')
-    .trim();
+  const firstName = homeownerProfile?.first_name?.trim() ?? '';
+  const lastName = homeownerProfile?.last_name?.trim() ?? '';
+  const homeownerFullName = [firstName, lastName].filter(Boolean).join(' ').trim();
   const booking = (r.bookings as { addresses?: RawAddress | null } | null) ?? null;
   const addr = booking?.addresses ?? null;
   const neighborhood = addr?.neighborhood ?? addr?.city ?? null;
@@ -43,11 +42,13 @@ function mapJobListRow(row: unknown): Job {
     id: r.id as string,
     bookingId: r.booking_id as string,
     providerId: r.provider_id as string,
-    providerName: (prov?.display_name ?? homeownerName) || 'Homeowner',
+    providerName: (prov?.display_name ?? homeownerFullName) || 'Homeowner',
     providerAvatarUrl: prov?.avatar_url ?? null,
     providerScore: prov?.composite_score_overall ?? null,
     homeownerId: r.homeowner_id as string,
-    homeownerName: homeownerName || undefined,
+    // First name + separate last initial so cards can show the privacy-masked "John D."
+    homeownerName: firstName || homeownerFullName || undefined,
+    homeownerLastInitial: lastName ? lastName[0].toUpperCase() : undefined,
     homeownerNeighborhood: neighborhood,
     addressFormatted: buildAddressFormatted(addr),
     addressZip: addr?.zip ?? null,

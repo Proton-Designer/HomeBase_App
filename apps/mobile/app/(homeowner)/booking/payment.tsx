@@ -301,7 +301,12 @@ export default function PaymentStep() {
           size="lg"
           fullWidth
           loading={submitting}
-          disabled={!hasCard || submitting}
+          disabled={
+            !hasCard ||
+            submitting ||
+            totalCents <= 0 ||
+            (!provider && !matchedProviderId)
+          }
           onPress={onConfirm}
         />
         {!hasCard ? (

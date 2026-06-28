@@ -13,7 +13,7 @@ export interface ThreadMessage extends Message {
   status?: MessageStatus;
 }
 
-function genClientId(): string {
+export function genClientId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
@@ -50,9 +50,13 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
   const [olderMessages, setOlderMessages] = useState<Message[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const didLoadOlderRef = useRef(false);
 
+  // Sync hasMore from the latest page only until the user starts paginating. After
+  // loadOlder runs, a realtime-triggered refetch of latestPage would otherwise re-enable
+  // "load older" the user had already exhausted — from then on trust loadOlder's moreOlder.
   useEffect(() => {
-    if (latestPage) setHasMore(latestPage.hasMore);
+    if (latestPage && !didLoadOlderRef.current) setHasMore(latestPage.hasMore);
   }, [latestPage]);
 
   const serverMessages = useMemo<Message[]>(() => {
@@ -105,10 +109,10 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
       (incoming) => {
         void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
         void queryClient.invalidateQueries({ queryKey: ['threads'] });
-        // Echo of our own optimistic message → remove the optimistic copy.
-        if (incoming.clientId) {
-          setPending((p) => p.filter((m) => m.clientId !== incoming.clientId));
-        }
+        // NOTE: do NOT drop the optimistic copy here — the confirmed row isn't in
+        // serverMessages until the invalidation's refetch lands, so removing pending now
+        // blanks the message for one round-trip. The serverMessages effect evicts it
+        // by clientId once the confirmed row arrives.
         // Message from other party while thread is open — debounce markRead so
         // the unread count clears without hammering the server on burst sends.
         if (incoming.fromUserId !== currentUserIdRef.current) {
@@ -140,6 +144,7 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
         limit: 30,
       });
       setOlderMessages((prev) => [...older, ...prev]);
+      didLoadOlderRef.current = true;
       setHasMore(moreOlder);
     } finally {
       setIsLoadingOlder(false);

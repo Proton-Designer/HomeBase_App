@@ -73,6 +73,7 @@ export interface Job {
   providerScore?: number | null;
   homeownerId: string;
   homeownerName?: string;
+  homeownerLastInitial?: string;
   homeownerNeighborhood?: string | null;
   addressFormatted?: string | null;
   addressZip?: string | null;

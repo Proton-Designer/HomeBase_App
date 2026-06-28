@@ -158,6 +158,9 @@ export default function ProviderJobsScreen() {
       return rows;
     },
     enabled: !!providerId,
+    // Avoid a focus-triggered refetch immediately overwriting an optimistic decline
+    // removal (the queryFn mirrors rows into `requests` via setRequests).
+    staleTime: 30_000,
   });
 
   const activeJobs = (allJobs as unknown as Record<string, unknown>[]).filter(
@@ -461,20 +464,22 @@ export default function ProviderJobsScreen() {
                       )}
 
                       <View style={{ flexDirection: 'row', gap: 8 }}>
-                        <View style={{ flex: 1 }}>
-                          <Button
-                            label="Mark en route"
-                            variant="outline"
-                            size="sm"
-                            fullWidth
-                            onPress={() => {
-                              jobsApi
-                                .setStatus(job.id as string, 'en_route')
-                                .then(() => refetchJobs())
-                                .catch(() => Alert.alert('Could not update', 'Please try again.'));
-                            }}
-                          />
-                        </View>
+                        {job.status === 'confirmed' ? (
+                          <View style={{ flex: 1 }}>
+                            <Button
+                              label="Mark en route"
+                              variant="outline"
+                              size="sm"
+                              fullWidth
+                              onPress={() => {
+                                jobsApi
+                                  .setStatus(job.id as string, 'en_route')
+                                  .then(() => refetchJobs())
+                                  .catch(() => Alert.alert('Could not update', 'Please try again.'));
+                              }}
+                            />
+                          </View>
+                        ) : null}
                         <View style={{ flex: 1 }}>
                           <Button
                             label="Check-in"
@@ -488,7 +493,16 @@ export default function ProviderJobsScreen() {
                         </View>
                       </View>
                       <Pressable
-                        onPress={() => router.push(`/(provider)/thread/${job.id}`)}
+                        onPress={() =>
+                          router.push({
+                            pathname: `/(provider)/thread/${job.id}`,
+                            params: {
+                              name: homeownerName,
+                              serviceType: (job.serviceType as string) ?? '',
+                              jobStatus: (job.status as string) ?? '',
+                            },
+                          })
+                        }
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -675,15 +689,6 @@ export default function ProviderJobsScreen() {
                     }}
                   >
                     {tech.firstName} {tech.lastName}
-                  </Text>
-                  <Text
-                    style={{
-                      ...textStyles['body-sm'],
-                      color: colors.textSecondary,
-                      marginTop: 1,
-                    }}
-                  >
-                    {tech.todayJobCount ?? 0} jobs today
                   </Text>
                 </View>
                 {isSelected && (

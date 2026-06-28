@@ -10,7 +10,12 @@ interface BookingFlowState {
   matchedProviderId: string | null;
   // Set when the booking originates from an accepted custom-job quote — the price the
   // homeowner agreed to. Payment uses this instead of the provider's generic range.
+  // May be null even in the quote flow (providers can quote without a price).
   quoteAmountCents: number | null;
+  // True when the booking came from an accepted quote — the provider is already chosen,
+  // so the match step is skipped. Distinct from quoteAmountCents (which is null for
+  // price-free quotes) and from a plain rehire (matchedProviderId set, this false).
+  fromQuoteFlow: boolean;
   homeownerId: string | null;
   addressId: string | null;
   addressLabel: string | null;
@@ -24,6 +29,7 @@ interface BookingFlowState {
   setScheduledAt: (d: Date | null) => void;
   setMatchedProvider: (id: string | null) => void;
   setQuoteAmount: (cents: number | null) => void;
+  setFromQuoteFlow: (v: boolean) => void;
   setHomeownerId: (id: string | null) => void;
   setAddressId: (id: string | null) => void;
   setAddressLabel: (label: string | null) => void;
@@ -41,6 +47,7 @@ const initial: Omit<
   | 'setScheduledAt'
   | 'setMatchedProvider'
   | 'setQuoteAmount'
+  | 'setFromQuoteFlow'
   | 'setHomeownerId'
   | 'setAddressId'
   | 'setAddressLabel'
@@ -55,6 +62,7 @@ const initial: Omit<
   scheduledAt: null,
   matchedProviderId: null,
   quoteAmountCents: null,
+  fromQuoteFlow: false,
   homeownerId: null,
   addressId: null,
   addressLabel: null,
@@ -71,6 +79,7 @@ export const useBookingStore = create<BookingFlowState>((set) => ({
   setScheduledAt: (d) => set({ scheduledAt: d }),
   setMatchedProvider: (id) => set({ matchedProviderId: id }),
   setQuoteAmount: (cents) => set({ quoteAmountCents: cents }),
+  setFromQuoteFlow: (v) => set({ fromQuoteFlow: v }),
   setHomeownerId: (id) => set({ homeownerId: id }),
   setAddressId: (id) => set({ addressId: id }),
   setAddressLabel: (label) => set({ addressLabel: label }),

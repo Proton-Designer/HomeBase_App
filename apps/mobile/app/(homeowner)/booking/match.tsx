@@ -32,7 +32,7 @@ const ENTER_NOTIFY_CONFIRM = onlyNative(FadeIn.duration(200));
 
 export default function MatchStep() {
   const router = useRouter();
-  const { serviceType, bookingType, matchedProviderId, quoteAmountCents, setMatchedProvider } =
+  const { serviceType, bookingType, matchedProviderId, fromQuoteFlow, setMatchedProvider } =
     useBookingStore();
   const userId = useAuthStore((s) => s.user)?.id ?? null;
 
@@ -78,7 +78,7 @@ export default function MatchStep() {
   }, [showLoading]);
 
   // Trust rationale fires only for the selected provider.
-  const { data: rationale } = useQuery({
+  const { data: rationale, isLoading: rationaleLoading } = useQuery({
     queryKey: ['trust-rationale', selectedId],
     queryFn: async () => {
       if (!selectedId) return null;
@@ -111,12 +111,13 @@ export default function MatchStep() {
 
   // A booking from an accepted custom-job quote already has its provider chosen. Skip
   // the re-match step entirely — it only searches the local ZIP shortlist and would drop
-  // a quoted pro who isn't in it (and lose the agreed price). Go straight to details.
+  // a quoted pro who isn't in it. Keyed on fromQuoteFlow (not the quote price, which is
+  // null for price-free quotes) so a price-free accepted quote isn't lost here.
   useEffect(() => {
-    if (matchedProviderId && quoteAmountCents != null) {
+    if (matchedProviderId && fromQuoteFlow) {
       router.replace('/(homeowner)/booking/details');
     }
-  }, [matchedProviderId, quoteAmountCents, router]);
+  }, [matchedProviderId, fromQuoteFlow, router]);
 
   // One-tap rehire: if the homeowner arrived with a pro pre-chosen, pre-select it.
   useEffect(() => {
@@ -353,12 +354,12 @@ export default function MatchStep() {
               >
                 Why this provider
               </Text>
-              {rationale ? (
-                <Text style={{ ...textStyles['body-md'], color: colors.textPrimary }}>
-                  {rationale}
-                </Text>
-              ) : (
+              {rationaleLoading ? (
                 <SkeletonLoader width="100%" height={40} borderRadius={4} />
+              ) : (
+                <Text style={{ ...textStyles['body-md'], color: colors.textPrimary }}>
+                  {rationale ?? 'Verified through completed homeowner check-ins.'}
+                </Text>
               )}
             </Card>
           </Animated.View>

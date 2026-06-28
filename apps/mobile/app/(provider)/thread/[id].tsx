@@ -170,7 +170,9 @@ export default function ProviderThreadScreen() {
   const scrollOffsetRef = useRef(0);
   const contentHeightRef = useRef(0);
   const layoutHeightRef = useRef(0);
-  const prevMsgCountRef = useRef(messages.length);
+  // Init to 0 (not messages.length) so the `=== 0` initial-scroll branch fires on a warm
+  // cache — otherwise opening a cached thread lands at the top instead of the latest message.
+  const prevMsgCountRef = useRef(0);
 
   const isAtBottom = useCallback(() => {
     return (

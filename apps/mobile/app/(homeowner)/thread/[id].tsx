@@ -528,7 +528,7 @@ export default function ThreadScreen() {
             {/* Job context line */}
             {serviceType ? (
               <Pressable
-                onPress={() => router.push(`/(homeowner)/jobs/${jobId}` as never)}
+                onPress={() => router.push(`/(homeowner)/job/${jobId}` as never)}
                 accessibilityLabel={`${serviceType}${jobStatus ? ` · ${jobStatus}` : ''}. Tap to view job.`}
                 hitSlop={4}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
@@ -548,7 +548,7 @@ export default function ThreadScreen() {
 
         {/* Right: view job */}
         <Pressable
-          onPress={() => router.push(`/(homeowner)/jobs/${jobId}` as never)}
+          onPress={() => router.push(`/(homeowner)/job/${jobId}` as never)}
           hitSlop={8}
           accessibilityLabel="View job"
           style={[
