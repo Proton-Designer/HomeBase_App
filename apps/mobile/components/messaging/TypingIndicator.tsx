@@ -16,6 +16,11 @@ interface TypingIndicatorProps {
   name: string;
 }
 
+// Stable builder refs — a fresh FadeIn/FadeOut each render can make Reanimated re-fire the
+// entrance/exit while the indicator stays mounted across thread re-renders (new messages).
+const TYPING_IN = FadeIn.duration(200);
+const TYPING_OUT = FadeOut.duration(200);
+
 function AnimatedDot({ delay }: { delay: number }) {
   const scale = useSharedValue(0.4);
 
@@ -88,8 +93,8 @@ function SmallAvatar({ uri, name }: { uri: string | null; name: string }) {
 export function TypingIndicator({ avatarUrl, name }: TypingIndicatorProps) {
   return (
     <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
+      entering={TYPING_IN}
+      exiting={TYPING_OUT}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end',

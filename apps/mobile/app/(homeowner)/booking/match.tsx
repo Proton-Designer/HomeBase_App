@@ -20,11 +20,16 @@ import { useBookingStore } from '../../../stores/bookingStore';
 import { useAuthStore } from '../../../stores/authStore';
 import { fetchPrimaryAddress } from '../../../lib/api/addresses';
 import { search as searchProviders } from '../../../lib/api/providers';
+import type { Provider } from '../../../lib/types';
 import { track } from '../../../lib/api/events';
 import { enter, enterStaggered, onlyNative } from '../../../lib/motion';
 import { colors, shadows, textStyles } from '../../../tokens';
 
 // Module-scope stable entering instances — avoids Reanimated re-fire on re-render.
+// Stable empty default so `data: shortlist = []` isn't a fresh array each render (which
+// would re-run the pre-select effect every render while the providers query loads).
+const EMPTY_SHORTLIST: Provider[] = [];
+
 const ENTER_HEADER = onlyNative(FadeIn.duration(220));
 const ENTER_RATIONALE = onlyNative(FadeInDown.delay(100).duration(300));
 const ENTER_TIMEOUT = onlyNative(FadeIn.duration(300));
@@ -51,7 +56,7 @@ export default function MatchStep() {
 
   // Shortlist: top 5 ranked providers for this ZIP + service type.
   const {
-    data: shortlist = [],
+    data: shortlist = EMPTY_SHORTLIST,
     isLoading,
     isError,
     refetch,

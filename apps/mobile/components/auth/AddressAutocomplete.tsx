@@ -34,7 +34,8 @@ export function AddressAutocomplete({
     }
     const q = query.trim();
     if (q.length < 3) {
-      setSuggestions([]);
+      // Keep the same [] reference when already empty to avoid a needless render per keystroke.
+      setSuggestions((prev) => (prev.length === 0 ? prev : []));
       setLoading(false);
       return;
     }

@@ -177,7 +177,8 @@ export default function ClaimDetailScreen() {
 
   useEffect(() => {
     if (!claim?.photoUrls.length) {
-      setSignedPhotoUrls([]);
+      // Keep the same [] reference when already empty to avoid a needless extra render.
+      setSignedPhotoUrls((prev) => (prev.length === 0 ? prev : []));
       return;
     }
     let cancelled = false;

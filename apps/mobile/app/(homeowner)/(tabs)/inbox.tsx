@@ -36,6 +36,10 @@ import { colors, textStyles } from '../../../tokens';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+// Stable empty default so a `data: threads = []` fallback isn't a fresh array every render
+// (which would make any effect depending on `threads` re-run forever while the query loads).
+const EMPTY_THREADS: Thread[] = [];
+
 // ─── Time formatting for thread rows ─────────────────────────────────────────
 
 function formatThreadTime(dateStr: string): string {
@@ -413,7 +417,7 @@ export default function InboxScreen() {
   const homeownerId = useAuthStore((s) => s.user?.id ?? null);
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
-  const { data: threads = [], isLoading, isError, refetch } = useQuery({
+  const { data: threads = EMPTY_THREADS, isLoading, isError, refetch } = useQuery({
     queryKey: ['threads', 'homeowner', homeownerId],
     queryFn: () => listThreadsForHomeowner(homeownerId ?? ''),
     enabled: !!homeownerId,

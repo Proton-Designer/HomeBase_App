@@ -22,6 +22,14 @@ import { X } from 'lucide-react-native';
 import { colors } from '../../tokens';
 import { useBreakpoint } from '../../lib/useBreakpoint';
 
+// Stable builder refs for the web-dialog branch. A fresh entering/exiting object each render
+// can make Reanimated re-fire the worklet while a parent (realtime-driven) re-renders the
+// open modal — flashing or closing it early.
+const MODAL_BACKDROP_IN = FadeIn.duration(180);
+const MODAL_BACKDROP_OUT = FadeOut.duration(160);
+const MODAL_SHEET_IN = SlideInDown.springify().damping(24);
+const MODAL_SHEET_OUT = SlideOutDown.duration(200);
+
 export interface BottomSheetWrapperHandle {
   present: () => void;
   dismiss: () => void;
@@ -92,8 +100,8 @@ export const BottomSheetWrapper = forwardRef<BottomSheetWrapperHandle, BottomShe
           onRequestClose={() => setDialogVisible(false)}
         >
           <Animated.View
-            entering={FadeIn.duration(180)}
-            exiting={FadeOut.duration(160)}
+            entering={MODAL_BACKDROP_IN}
+            exiting={MODAL_BACKDROP_OUT}
             style={{
               flex: 1,
               backgroundColor: 'rgba(0,0,0,0.5)',
@@ -106,8 +114,8 @@ export const BottomSheetWrapper = forwardRef<BottomSheetWrapperHandle, BottomShe
               onPress={() => setDialogVisible(false)}
             />
             <Animated.View
-              entering={SlideInDown.springify().damping(24)}
-              exiting={SlideOutDown.duration(200)}
+              entering={MODAL_SHEET_IN}
+              exiting={MODAL_SHEET_OUT}
               style={{
                 width: '100%',
                 maxWidth: 480,
