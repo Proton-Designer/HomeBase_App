@@ -143,9 +143,17 @@ export async function onboard(payload: {
   // resolves reliably, and the timeout converts any stall into a surfaced error.
   const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/provider-onboard`;
   const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // getSession() must be bounded: it acquires supabase-js's auth lock, so if a background
+  // token refresh is stalled it can hang indefinitely — and the AbortController below only
+  // covers the fetch, not this call. A stuck onboarding "Continue" was traced to this
+  // unprotected await. Race it against a timeout so a stalled auth check surfaces an error
+  // instead of spinning forever.
+  const session = await Promise.race([
+    supabase.auth.getSession().then((r) => r.data.session),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Auth check timed out — please try again.')), 8000),
+    ),
+  ]);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
