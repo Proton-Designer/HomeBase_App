@@ -41,6 +41,18 @@ export default function ProviderOnboardingLayout() {
   const idx = last ? STEPS.indexOf(last) : 0;
   const fillRatio = (idx + 1) / STEPS.length;
 
+  // Back should go to the PREVIOUS STEP, not pop the navigation stack. On resume the wizard
+  // is entered with a single screen on the stack (router.push to the saved step), so a plain
+  // goBack() would exit onboarding entirely instead of stepping back. Navigate by index so
+  // Back is correct whether the user arrived via the normal flow or a Save & exit → resume.
+  const goToPrevStep = () => {
+    if (idx > 0) {
+      router.replace(`/(provider)/onboarding/${STEPS[idx - 1]}` as never);
+    } else {
+      goBack();
+    }
+  };
+
   // Remember the current step (persisted) so Save & exit → reopen resumes here instead of
   // restarting at step 1. Only track the 5 main wizard steps (not banking/verification).
   const setLastStep = useProviderOnboardingStore((s) => s.setLastStep);
@@ -168,7 +180,7 @@ export default function ProviderOnboardingLayout() {
             >
               {idx > 0 ? (
                 <Pressable
-                  onPress={goBack}
+                  onPress={goToPrevStep}
                   hitSlop={8}
                   style={[
                     { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 8 },
@@ -234,7 +246,7 @@ export default function ProviderOnboardingLayout() {
         }}
       >
         {idx > 0 ? (
-          <Pressable onPress={goBack} hitSlop={8} style={{ padding: 8 }}>
+          <Pressable onPress={goToPrevStep} hitSlop={8} style={{ padding: 8 }}>
             <ChevronLeft size={24} color={colors.textPrimary} />
           </Pressable>
         ) : (
@@ -304,6 +316,9 @@ export default function ProviderOnboardingLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
+          // Disable swipe-back so the in-wizard Back arrow (which steps by index) is the only
+          // back affordance — otherwise a swipe pops the single-screen resumed stack and exits.
+          gestureEnabled: false,
           animation: 'slide_from_right',
           animationDuration: 220,
           contentStyle: { backgroundColor: colors.background },
