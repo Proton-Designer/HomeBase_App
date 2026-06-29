@@ -25,6 +25,7 @@ import { ProviderCheckIn } from '../../../components/checkin/ProviderCheckIn';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { enterStaggered } from '../../../lib/motion';
 import { useAuthStore } from '../../../stores/authStore';
+import { useProviderOnboardingStore } from '../../../stores/providerOnboardingStore';
 import * as jobsApi from '../../../lib/api/jobs';
 import * as providersApi from '../../../lib/api/providers';
 import * as completionsApi from '../../../lib/api/completions';
@@ -274,6 +275,8 @@ function PressableJobRow({
 export default function ProviderTodayScreen() {
   const router = useRouter();
   const { user, providerId, onboardingComplete } = useAuthStore();
+  // Resume onboarding at the step the provider last left off (persisted), not step 1.
+  const onboardingStep = useProviderOnboardingStore((s) => s.lastStep);
   const [checkInJobId, setCheckInJobId] = useState<string | null>(null);
   const [checkInPayoutCents, setCheckInPayoutCents] = useState(0);
   const isDesktop = useBreakpoint() === 'desktop';
@@ -895,7 +898,7 @@ export default function ProviderTodayScreen() {
         {"You won't receive job requests or appear to homeowners until your setup is complete."}
       </Text>
       <Pressable
-        onPress={() => router.push('/(provider)/onboarding/business')}
+        onPress={() => router.push(`/(provider)/onboarding/${onboardingStep}` as never)}
         style={{
           backgroundColor: colors.primary[700],
           borderRadius: 12,

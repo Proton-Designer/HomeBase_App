@@ -13,6 +13,7 @@ import Animated, {
 import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
+import { useProviderOnboardingStore } from '../../../stores/providerOnboardingStore';
 
 const STEPS = [
   'business',
@@ -39,6 +40,13 @@ export default function ProviderOnboardingLayout() {
   const last = segments[segments.length - 1] as (typeof STEPS)[number] | undefined;
   const idx = last ? STEPS.indexOf(last) : 0;
   const fillRatio = (idx + 1) / STEPS.length;
+
+  // Remember the current step (persisted) so Save & exit → reopen resumes here instead of
+  // restarting at step 1. Only track the 5 main wizard steps (not banking/verification).
+  const setLastStep = useProviderOnboardingStore((s) => s.setLastStep);
+  useEffect(() => {
+    if (last && (STEPS as readonly string[]).includes(last)) setLastStep(last);
+  }, [last, setLastStep]);
 
   const width = useSharedValue(0);
   useEffect(() => {

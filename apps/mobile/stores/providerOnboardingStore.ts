@@ -27,10 +27,13 @@ interface ProviderOnboardingState {
   availability: ProviderAvailabilityDraft;
   /** Set once the `providers` row is created (at the availability step). */
   providerId: string | null;
+  /** Last onboarding step the user was on, so Save & exit → reopen resumes there. */
+  lastStep: string;
   setBusiness: (patch: Partial<ProviderBusinessDetails>) => void;
   setServiceArea: (patch: Partial<ProviderServiceAreaDraft>) => void;
   setAvailability: (patch: Partial<ProviderAvailabilityDraft>) => void;
   setProviderId: (id: string | null) => void;
+  setLastStep: (step: string) => void;
   reset: () => void;
 }
 
@@ -49,6 +52,7 @@ const makeInitial = () => ({
     end: '17:00',
   } as ProviderAvailabilityDraft,
   providerId: null as string | null,
+  lastStep: 'business' as string,
 });
 
 // Persisted so a refresh / app-reopen mid-onboarding keeps the draft. Without this, the
@@ -63,6 +67,7 @@ export const useProviderOnboardingStore = create<ProviderOnboardingState>()(
       setServiceArea: (patch) => set((s) => ({ serviceArea: { ...s.serviceArea, ...patch } })),
       setAvailability: (patch) => set((s) => ({ availability: { ...s.availability, ...patch } })),
       setProviderId: (providerId) => set({ providerId }),
+      setLastStep: (lastStep) => set({ lastStep }),
       reset: () => set(makeInitial()),
     }),
     {

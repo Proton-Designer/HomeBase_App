@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, Plus, X, Check } from 'lucide-react-native';
@@ -33,6 +33,48 @@ export default function ProviderProfileStep() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  // Persist the in-progress profile draft when leaving the screen (Save & exit / Back) so an
+  // uploaded photo + entered fields survive — onFinish only runs on "Finish setup". A ref
+  // holds the latest values so the unmount-only effect sees them without re-running. Guarded
+  // by `hydrated` so a quick in-and-out (before the DB load) can't clobber a saved profile
+  // with empty initial values.
+  const draftRef = useRef({ avatar, website, googleBusiness, startingPrice, portfolio, hydrated });
+  draftRef.current = { avatar, website, googleBusiness, startingPrice, portfolio, hydrated };
+  const finishedRef = useRef(false);
+  useEffect(() => {
+    if (!userId) return;
+    return () => {
+      const d = draftRef.current;
+      if (finishedRef.current || !d.hydrated) return;
+      const portfolioUrls = d.portfolio.map((p) => p.publicUrl ?? p.uri).filter(Boolean);
+      const startDollars = parseFloat(d.startingPrice);
+      void supabase
+        .from('providers')
+        .update({
+          avatar_url: d.avatar,
+          website_url: d.website.trim() || null,
+          google_business_url: d.googleBusiness.trim() || null,
+          price_range_min_cents: Number.isFinite(startDollars) ? Math.round(startDollars * 100) : 0,
+          portfolio_photos: portfolioUrls,
+        })
+        .eq('owner_user_id', userId)
+        .then(
+          () => {},
+          () => {},
+        );
+      if (d.avatar) {
+        void supabase
+          .from('profiles')
+          .update({ avatar_url: d.avatar })
+          .eq('id', userId)
+          .then(
+            () => {},
+            () => {},
+          );
+      }
+    };
+  }, [userId]);
 
   // This screen doubles as "Edit profile" (the provider profile tab routes here).
   // Without hydrating the existing providers row first, the form renders blank and
@@ -178,6 +220,7 @@ export default function ProviderProfileStep() {
         .eq('id', userId);
       if (profileErr) throw profileErr;
 
+      finishedRef.current = true; // onFinish persisted everything — skip the unmount draft-save
       setOnboardingComplete(true);
       useProviderOnboardingStore.getState().reset();
       router.replace('/(provider)/(tabs)/today');
