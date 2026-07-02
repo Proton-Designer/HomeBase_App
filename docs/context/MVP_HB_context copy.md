@@ -369,6 +369,11 @@ These are the principles that must be respected in every implementation decision
 
 This section tracks what is actually built in the repo vs. what still needs operator action. **Companion file:** `OPERATIONS_TODO.md` (sibling of this file) lists every API key, third-party account, dashboard config step, and store-listing task that must be completed before public launch.
 
+> **⚠️ SNAPSHOT SUPERSEDED (updated 2026-07-02).** The subsections below are the 2026-05-14 state and are now stale — trust the current code and the recent ops docs over this snapshot:
+> - **Supabase project changed.** §16.2's project `rukpypuzfqrswiybvbkg` was deleted and rebuilt on 2026-06-17 as **`zkkingzdbbbriwyxbxkf`** (schema restored from a code audit; ~18 edge functions live, now mirrored in `docs/ops/edge-functions/`). Repo paths also moved from `Marketplace_MVP/app/` to the repo root (`apps/mobile`, `apps/admin`).
+> - **The "5 wiring gaps" in §16.7 are largely resolved.** Confirmed wired since: **Stripe capture** (gap 4 — `captureOnCompletion` is now called from both check-in widgets; `net_cents` accuracy fixed 2026-07-01) and **photo storage** (gap 2 — `uploadAsset()` writes to Storage buckets from the check-in and verification flows). Re-verify the AI-rationale, calendar-sync-invocation, and blocked-time-UI items against current code.
+> - **Two months of hardening since.** See `docs/ops/BUG_INVESTIGATION_2026-06-27.md`, `docs/ops/MESSAGING_NOTES.md`, and the `docs/ops/CTO_NIGHT*` docs: a ~66-bug audit + fixes, provider-onboarding rework, a render-loop sweep, auth hardening (bounded await-timeouts + `processLock` + offline-purge fix), a messaging reliability layer, and a service-catalog / job-mapper consolidation.
+
 ### 16.1 Monorepo & app skeletons — **DONE**
 - Turborepo monorepo at `Marketplace_MVP/app/` with two workspaces:
   - `apps/mobile` — Expo SDK 54 (managed workflow) + Expo Router 6, single codebase for homeowner + provider + tech roles

@@ -2,6 +2,13 @@
 
 > **Claude Code context file.** This is the complete implementation guide for the HomeBase Marketplace MVP frontend (React Native + Next.js admin) and the minimal API surface needed to wire the UI to the backend. Read `MVP_OVERVIEW.md` first for product context and scope.
 
+> **⚠️ PARTIALLY STALE — do not build new UI from this doc literally.**
+> - **Primary colour is BLUE `#2563EB`, not forest-green `#1A3D2B`.** The colour values throughout
+>   this doc are the old green system. `apps/mobile/tokens/` is the authoritative source of truth
+>   for colours / spacing / typography — match those, not the hexes here.
+> - **Versions are outdated.** The app runs **Expo SDK 54 / Expo Router 6 / Reanimated 4** (this
+>   doc pins 51 / 3.5 / 3). Use Reanimated 4, never core `Animated`.
+
 ---
 
 ## Table of Contents
@@ -57,9 +64,9 @@ npx expo install @stripe/stripe-react-native
 ```json
 {
   "dependencies": {
-    "expo": "~51.0.0",
-    "expo-router": "~3.5.0",
-    "react-native-reanimated": "~3.10.0",
+    "expo": "~54.0.0",
+    "expo-router": "~6.0.0",
+    "react-native-reanimated": "~4.0.0",
     "react-native-gesture-handler": "~2.16.0",
     "@tanstack/react-query": "^5.0.0",
     "zustand": "^4.5.0",
@@ -667,7 +674,7 @@ The booking flow is the **most critical UX in the app**. It must feel as smooth 
 **Global booking flow shell:**
 - Fixed header with: back button (left), progress indicator (center, step X of 6), "Cancel" link (right)
 - Progress indicator: 6 circular dots, current step filled green, completed steps filled amber, upcoming steps gray
-- Step transitions: horizontal slide — new step slides in from right, current step exits to left (Reanimated 3)
+- Step transitions: horizontal slide — new step slides in from right, current step exits to left (Reanimated 4)
 - Sticky bottom CTA area: white background, `[Continue]` button, step-specific helper text above it
 
 ---
@@ -2052,7 +2059,7 @@ export const queryKeys = {
 
 ## 10. Animations & Polish Specifications
 
-Use Reanimated 3 for all animations. Use `withSpring`, `withTiming`, `withSequence`, and `withDelay` as appropriate. Never use `Animated` from React Native core.
+Use Reanimated 4 for all animations. Use `withSpring`, `withTiming`, `withSequence`, and `withDelay` as appropriate. Never use `Animated` from React Native core.
 
 ---
 
