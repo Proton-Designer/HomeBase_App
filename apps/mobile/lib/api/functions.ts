@@ -16,9 +16,13 @@ export async function invokeFn<T = unknown>(
 ): Promise<T> {
   const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/${name}`;
   const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // getSession() acquires supabase-js's auth lock; a stalled background refresh can hang
+  // it indefinitely (the AbortController below only covers the fetch). Bound it and
+  // degrade to an anon call on timeout instead of leaving the caller spinning forever.
+  const session = await Promise.race([
+    supabase.auth.getSession().then((r) => r.data.session),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+  ]);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 20000);

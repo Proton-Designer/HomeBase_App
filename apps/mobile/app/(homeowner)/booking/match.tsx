@@ -35,6 +35,13 @@ const ENTER_RATIONALE = onlyNative(FadeInDown.delay(100).duration(300));
 const ENTER_TIMEOUT = onlyNative(FadeIn.duration(300));
 const ENTER_NOTIFY_CONFIRM = onlyNative(FadeIn.duration(200));
 
+function matchHeaderTitle(count: number): string {
+  if (count === 0) return 'Compare your top pros';
+  if (count === 1) return '1 pro serves your area';
+  if (count === 2) return '2 pros serve your area';
+  return `Compare ${count} vetted pros near you`;
+}
+
 export default function MatchStep() {
   const router = useRouter();
   const { serviceType, bookingType, matchedProviderId, fromQuoteFlow, setMatchedProvider } =
@@ -156,14 +163,7 @@ export default function MatchStep() {
   };
 
   const proCount = shortlist.length;
-  const headerTitle =
-    proCount === 0
-      ? 'Compare your top pros'
-      : proCount === 1
-        ? '1 pro serves your area'
-        : proCount === 2
-          ? '2 pros serve your area'
-          : `Compare ${proCount} vetted pros near you`;
+  const headerTitle = matchHeaderTitle(proCount);
   const headerSub =
     proCount > 0 ? 'We surface vetted pros near you — you choose who to hire.' : '';
 

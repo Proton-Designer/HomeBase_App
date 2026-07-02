@@ -90,10 +90,9 @@ const PROVIDER_COLUMNS =
   'is_available_today, external_rating, external_review_count, external_years, external_source';
 
 export async function search(zip: string, service?: ServiceType): Promise<Provider[]> {
-  const { data, error } = await supabase.functions.invoke<DbProviderRow[]>('providers-search', {
-    body: { zip, service },
-  });
-  if (error) throw error;
+  // invokeFn (direct fetch + timeouts) instead of supabase.functions.invoke, which can
+  // hang unsettled for authenticated functions in React Native.
+  const data = await invokeFn<DbProviderRow[]>('providers-search', { zip, service });
   return (data ?? []).map(mapRow);
 }
 

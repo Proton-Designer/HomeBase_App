@@ -22,7 +22,7 @@ import { colors, textStyles } from '../../tokens';
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(60),
   lastName: z.string().min(1, 'Last name is required').max(60),
-  email: z.string().email('Enter a valid email'),
+  email: z.string().trim().email('Enter a valid email'),
   password: z
     .string()
     .min(8, 'At least 8 characters')

@@ -40,6 +40,7 @@ import { TypingIndicator } from '../../../components/messaging/TypingIndicator';
 import { QuickReplyChips } from '../../../components/messaging/QuickReplyChips';
 import { NewMessagePill } from '../../../components/messaging/NewMessagePill';
 import { ThreadEmptyPanel } from '../../../components/messaging/ThreadEmptyPanel';
+import { ThreadErrorState } from '../../../components/messaging/ThreadErrorState';
 import { BottomSheetWrapper, type BottomSheetWrapperHandle } from '../../../components/shared/BottomSheetWrapper';
 
 // ─── List item types ──────────────────────────────────────────────────────────
@@ -180,8 +181,17 @@ export default function ThreadScreen() {
   const otherPartyAvatarUrl = avatarUrl || '';
   const otherPartyFirstName = otherPartyName.split(' ')[0] || 'them';
 
-  const { messages, send, retry, loadOlder, isLoadingOlder, unreadDividerId, lastReadMessageId } =
-    useThreadMessages({ jobId: jobId!, fromRole: 'homeowner' });
+  const {
+    messages,
+    send,
+    retry,
+    loadOlder,
+    isLoadingOlder,
+    unreadDividerId,
+    lastReadMessageId,
+    isError,
+    refetch,
+  } = useThreadMessages({ jobId: jobId!, fromRole: 'homeowner' });
 
   const { isOtherTyping, broadcastTyping } = useTypingPresence(jobId ?? '', userId);
 
@@ -344,7 +354,9 @@ export default function ThreadScreen() {
   const chatContent = (
     <>
       <View style={{ flex: 1, position: 'relative' }}>
-        {messages.length === 0 ? (
+        {isError && messages.length === 0 ? (
+          <ThreadErrorState onRetry={() => void refetch()} />
+        ) : messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'flex-start', paddingTop: 24 }}>
             <ThreadEmptyPanel
               otherPartyName={otherPartyName}

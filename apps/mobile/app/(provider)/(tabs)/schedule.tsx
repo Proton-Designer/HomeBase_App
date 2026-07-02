@@ -22,7 +22,7 @@ import {
 } from '../../../lib/api/providers';
 import type { Job } from '../../../lib/types';
 
-import { listForProviderInRange } from '../../../components/provider/scheduleApi';
+import { listForProviderInRange } from '../../../lib/api/jobs';
 import { MonthStrip } from '../../../components/provider/MonthStrip';
 import { WeekAgenda } from '../../../components/provider/WeekAgenda';
 import { AvailabilityPanel } from '../../../components/provider/AvailabilityPanel';

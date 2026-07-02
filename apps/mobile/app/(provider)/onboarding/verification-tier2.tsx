@@ -6,7 +6,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
 import { useAuthStore } from '../../../stores/authStore';
-import { supabase } from '../../../lib/supabase';
+import { invokeFn } from '../../../lib/api/functions';
 import { pickImageFromLibrary, uploadAsset } from '../../../lib/api/storage';
 import { colors, textStyles } from '../../../tokens';
 
@@ -65,15 +65,12 @@ export default function VerificationTier2Step() {
     try {
       const paths = docs.map((d) => d.path).filter((p): p is string => !!p);
       if (paths.length > 0) {
-        const { error } = await supabase.functions.invoke('verification-tier2-submit', {
-          body: {
-            userId,
-            insurancePaths: paths,
-            policyExpiry: expiry || null,
-            coverageAmountCents: coverage ? parseInt(coverage, 10) * 100 : null,
-          },
+        await invokeFn('verification-tier2-submit', {
+          userId,
+          insurancePaths: paths,
+          policyExpiry: expiry || null,
+          coverageAmountCents: coverage ? parseInt(coverage, 10) * 100 : null,
         });
-        if (error) throw error;
       }
       router.push('/(provider)/onboarding/banking');
     } catch (err: unknown) {

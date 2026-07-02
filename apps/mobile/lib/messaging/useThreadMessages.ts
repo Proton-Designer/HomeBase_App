@@ -3,9 +3,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listForJobPage, send as apiSend, markRead, type Message } from '../api/messages';
 import { subscribeToMessages } from '../api/realtime';
 import { useAuthStore } from '../../stores/authStore';
+import { usePendingMessages } from '../../stores/pendingMessagesStore';
 import type { UserRole } from '../types';
 
 export type MessageStatus = 'sending' | 'failed' | 'sent';
+
+// Stable empty reference so the pending selector doesn't return a fresh array each
+// render (which would spin the effects that depend on it — the render-loop class).
+const EMPTY_PENDING: ThreadMessage[] = [];
 
 // A message as the UI sees it: a server row, or an optimistic one not yet
 // confirmed. `status` is set only while a send is in flight or has failed.
@@ -40,10 +45,13 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
   const currentUserId = useAuthStore((s) => s.user?.id ?? null);
 
   // ─── Server data (latest page) ───────────────────────────────────────────
-  const { data: latestPage } = useQuery({
+  // refetchInterval caps how long a message missed by realtime (handshake gap or a
+  // network drop) can stay invisible; the onConnect bridge below recovers it faster.
+  const { data: latestPage, isError, refetch } = useQuery({
     queryKey: ['messages', jobId],
     queryFn: () => listForJobPage(jobId, { limit: 30 }),
     enabled: !!jobId,
+    refetchInterval: 30_000,
   });
 
   // Older pages prepended when user pulls to load more.
@@ -64,7 +72,30 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
   }, [olderMessages, latestPage]);
 
   // ─── Optimistic / unconfirmed messages ───────────────────────────────────
-  const [pending, setPending] = useState<ThreadMessage[]>([]);
+  // Persisted per-jobId (not component state) so a failed send survives leaving and
+  // re-opening the thread instead of vanishing on unmount.
+  const pending = usePendingMessages((s) => s.queues[jobId] ?? EMPTY_PENDING);
+  const setPendingStore = usePendingMessages((s) => s.set);
+  const setPending = useCallback(
+    (updater: ThreadMessage[] | ((prev: ThreadMessage[]) => ThreadMessage[])) => {
+      const prev = usePendingMessages.getState().queues[jobId] ?? EMPTY_PENDING;
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      setPendingStore(jobId, next);
+    },
+    [jobId, setPendingStore],
+  );
+
+  // On (re)mount there is no in-flight deliver() for a persisted 'sending' message, so
+  // reclassify any to 'failed' — otherwise they'd spin forever. User can tap to retry.
+  useEffect(() => {
+    const cur = usePendingMessages.getState().queues[jobId];
+    if (cur && cur.some((m) => m.status === 'sending')) {
+      setPendingStore(
+        jobId,
+        cur.map((m) => (m.status === 'sending' ? { ...m, status: 'failed' as const } : m)),
+      );
+    }
+  }, [jobId, setPendingStore]);
 
   // Drop any optimistic copy once its confirmed row arrives from the server.
   useEffect(() => {
@@ -124,6 +155,12 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
         // Other party marked our message as read — refetch for fresh readAt stamps.
         void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
       },
+      () => {
+        // Channel just went live — initial handshake OR a reconnect after a network
+        // drop. Refetch to pull any message that arrived while we weren't subscribed
+        // (realtime does not replay missed events).
+        void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
+      },
     );
     return () => {
       unsub();
@@ -140,7 +177,7 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
     setIsLoadingOlder(true);
     try {
       const { messages: older, hasMore: moreOlder } = await listForJobPage(jobId, {
-        before: oldest.sentAt,
+        before: { sentAt: oldest.sentAt, id: oldest.id },
         limit: 30,
       });
       setOlderMessages((prev) => [...older, ...prev]);
@@ -234,5 +271,7 @@ export function useThreadMessages({ jobId, fromRole }: { jobId: string; fromRole
     unreadDividerId,
     lastReadMessageId,
     markRead: useCallback(() => markRead(jobId), [jobId]),
+    isError,
+    refetch,
   };
 }

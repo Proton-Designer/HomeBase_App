@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   FlatList,
   Platform,
@@ -217,7 +217,7 @@ export default function BrowseProvidersScreen() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const sorted = sortProviders(allProviders, activeSort);
+  const sorted = useMemo(() => sortProviders(allProviders, activeSort), [allProviders, activeSort]);
 
   // Browsing/filtering providers is a demand signal — record it to demand_events
   // (CLAUDE.md non-negotiable: every search writes to demand_events). Debounced

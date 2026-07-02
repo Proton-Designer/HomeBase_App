@@ -289,15 +289,18 @@ function ThreadDetail({ jobId, otherPartyName }: { jobId: string; otherPartyName
   const queryClient = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
+  // Distinct key from the mobile thread hook: this query returns a flat Message[],
+  // while useThreadMessages caches a { messages, hasMore } page under ['messages', jobId].
+  // Sharing the key made whichever loaded second read the wrong shape → empty thread.
   const { data: messages = [] } = useQuery({
-    queryKey: ['messages', jobId],
+    queryKey: ['messages-flat', jobId],
     queryFn: () => listForJob(jobId),
   });
 
   useEffect(() => {
     void markRead(jobId);
     const unsub = subscribeToMessages(jobId, () => {
-      void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
+      void queryClient.invalidateQueries({ queryKey: ['messages-flat', jobId] });
       void queryClient.invalidateQueries({ queryKey: ['threads', 'homeowner'] });
     });
     return unsub;
@@ -307,7 +310,7 @@ function ThreadDetail({ jobId, otherPartyName }: { jobId: string; otherPartyName
     mutationFn: (body: string) =>
       sendMessage({ jobId, body, fromRole: 'homeowner', clientId: genClientId() }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['messages', jobId] });
+      void queryClient.invalidateQueries({ queryKey: ['messages-flat', jobId] });
       void queryClient.invalidateQueries({ queryKey: ['threads', 'homeowner'] });
     },
   });

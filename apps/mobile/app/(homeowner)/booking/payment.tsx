@@ -20,7 +20,7 @@ import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import * as payments from '../../../lib/api/payments';
 import * as bookings from '../../../lib/api/bookings';
-import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
+import { SERVICE_LABELS as SERVICE_LABEL, FREQUENCY_LABELS } from '../../../lib/constants';
 import type { ServiceType } from '../../../lib/types';
 
 export default function PaymentStep() {
@@ -249,7 +249,8 @@ export default function PaymentStep() {
                 marginTop: 8,
               }}
             >
-              Billed after each {frequency} service. Pause or cancel anytime.
+              Billed {frequency ? FREQUENCY_LABELS[frequency].toLowerCase() : 'per visit'}. Pause or
+              cancel anytime.
             </Text>
           ) : null}
         </Card>
@@ -366,76 +367,18 @@ export default function PaymentStep() {
                   shadowRadius: 24,
                 }}
               >
-                <Text
-                  style={{
-                    ...textStyles['editorial-title'],
-                    fontSize: 22,
-                    lineHeight: 28,
-                    color: colors.textPrimary,
-                  }}
-                >
-                  Add a card
-                </Text>
-                <Text
-                  style={{
-                    ...textStyles['body-sm'],
-                    color: colors.textTertiary,
-                    marginTop: -8,
-                  }}
-                >
-                  Demo mode: card details are stubs. Tap Save to register a test card.
-                </Text>
-                <Input
-                  testID="booking-payment-card-number"
-                  label="Card number"
-                  placeholder="4242 4242 4242 4242"
-                  keyboardType="number-pad"
-                  value={cardNumber}
-                  onChangeText={setCardNumber}
-                  maxLength={19}
+                <CardFormFields
+                  cardNumber={cardNumber}
+                  setCardNumber={setCardNumber}
+                  cardExp={cardExp}
+                  setCardExp={setCardExp}
+                  cardCvc={cardCvc}
+                  setCardCvc={setCardCvc}
+                  cardError={cardError}
+                  addingCard={addingCard}
+                  onCancel={closeCardSheet}
+                  onSave={handleAddCard}
                 />
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View style={{ flex: 1 }}>
-                    <Input
-                      testID="booking-payment-card-expiry"
-                      label="Expiry"
-                      placeholder="MM / YY"
-                      keyboardType="number-pad"
-                      value={cardExp}
-                      onChangeText={setCardExp}
-                      maxLength={7}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Input
-                      testID="booking-payment-card-cvc"
-                      label="CVC"
-                      placeholder="123"
-                      keyboardType="number-pad"
-                      secureTextEntry
-                      value={cardCvc}
-                      onChangeText={setCardCvc}
-                      maxLength={4}
-                    />
-                  </View>
-                </View>
-                {cardError ? (
-                  <Text style={{ ...textStyles['body-sm'], color: colors.error }}>{cardError}</Text>
-                ) : null}
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <View style={{ flex: 1 }}>
-                    <Button testID="booking-payment-card-cancel" label="Cancel" variant="outline" fullWidth onPress={closeCardSheet} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Button
-                      testID="booking-payment-card-save"
-                      label="Save card"
-                      fullWidth
-                      loading={addingCard}
-                      onPress={handleAddCard}
-                    />
-                  </View>
-                </View>
               </Pressable>
             </Pressable>
           ) : null}
@@ -457,81 +400,124 @@ export default function PaymentStep() {
               Platform.OS !== 'web' ? sheetStyle : null,
             ]}
           >
-            <Text
-              style={{
-                ...textStyles['editorial-title'],
-                fontSize: 22,
-                lineHeight: 28,
-                color: colors.textPrimary,
-              }}
-            >
-              Add a card
-            </Text>
-            <Text
-              style={{
-                ...textStyles['body-sm'],
-                color: colors.textTertiary,
-                marginTop: -8,
-              }}
-            >
-              Demo mode: card details are stubs. Tap Save to register a test card.
-            </Text>
-            <Input
-              testID="booking-payment-card-number"
-              label="Card number"
-              placeholder="4242 4242 4242 4242"
-              keyboardType="number-pad"
-              value={cardNumber}
-              onChangeText={setCardNumber}
-              maxLength={19}
+            <CardFormFields
+              cardNumber={cardNumber}
+              setCardNumber={setCardNumber}
+              cardExp={cardExp}
+              setCardExp={setCardExp}
+              cardCvc={cardCvc}
+              setCardCvc={setCardCvc}
+              cardError={cardError}
+              addingCard={addingCard}
+              onCancel={closeCardSheet}
+              onSave={handleAddCard}
             />
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={{ flex: 1 }}>
-                <Input
-                  testID="booking-payment-card-expiry"
-                  label="Expiry"
-                  placeholder="MM / YY"
-                  keyboardType="number-pad"
-                  value={cardExp}
-                  onChangeText={setCardExp}
-                  maxLength={7}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Input
-                  testID="booking-payment-card-cvc"
-                  label="CVC"
-                  placeholder="123"
-                  keyboardType="number-pad"
-                  secureTextEntry
-                  value={cardCvc}
-                  onChangeText={setCardCvc}
-                  maxLength={4}
-                />
-              </View>
-            </View>
-            {cardError ? (
-              <Text style={{ ...textStyles['body-sm'], color: colors.error }}>{cardError}</Text>
-            ) : null}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1 }}>
-                <Button testID="booking-payment-card-cancel" label="Cancel" variant="outline" fullWidth onPress={closeCardSheet} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  testID="booking-payment-card-save"
-                  label="Save card"
-                  fullWidth
-                  loading={addingCard}
-                  onPress={handleAddCard}
-                />
-              </View>
-            </View>
           </Animated.View>
           ) : null}
         </>
       ) : null}
     </View>
+  );
+}
+
+// Shared "Add a card" form body — rendered inside the web-desktop modal and the mobile
+// bottom sheet, which differ only in their outer container.
+function CardFormFields({
+  cardNumber,
+  setCardNumber,
+  cardExp,
+  setCardExp,
+  cardCvc,
+  setCardCvc,
+  cardError,
+  addingCard,
+  onCancel,
+  onSave,
+}: {
+  cardNumber: string;
+  setCardNumber: (v: string) => void;
+  cardExp: string;
+  setCardExp: (v: string) => void;
+  cardCvc: string;
+  setCardCvc: (v: string) => void;
+  cardError: string | null;
+  addingCard: boolean;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <>
+      <Text
+        style={{
+          ...textStyles['editorial-title'],
+          fontSize: 22,
+          lineHeight: 28,
+          color: colors.textPrimary,
+        }}
+      >
+        Add a card
+      </Text>
+      <Text style={{ ...textStyles['body-sm'], color: colors.textTertiary, marginTop: -8 }}>
+        Demo mode: card details are stubs. Tap Save to register a test card.
+      </Text>
+      <Input
+        testID="booking-payment-card-number"
+        label="Card number"
+        placeholder="4242 4242 4242 4242"
+        keyboardType="number-pad"
+        value={cardNumber}
+        onChangeText={setCardNumber}
+        maxLength={19}
+      />
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Input
+            testID="booking-payment-card-expiry"
+            label="Expiry"
+            placeholder="MM / YY"
+            keyboardType="number-pad"
+            value={cardExp}
+            onChangeText={setCardExp}
+            maxLength={7}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Input
+            testID="booking-payment-card-cvc"
+            label="CVC"
+            placeholder="123"
+            keyboardType="number-pad"
+            secureTextEntry
+            value={cardCvc}
+            onChangeText={setCardCvc}
+            maxLength={4}
+          />
+        </View>
+      </View>
+      {cardError ? (
+        <Text style={{ ...textStyles['body-sm'], color: colors.error }}>{cardError}</Text>
+      ) : null}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Button
+            testID="booking-payment-card-cancel"
+            label="Cancel"
+            variant="outline"
+            fullWidth
+            onPress={onCancel}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button
+            testID="booking-payment-card-save"
+            label="Save card"
+            fullWidth
+            loading={addingCard}
+            onPress={onSave}
+          />
+        </View>
+      </View>
+    </>
   );
 }
 

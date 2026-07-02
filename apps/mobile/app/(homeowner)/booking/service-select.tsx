@@ -11,21 +11,17 @@ import { useBookingStore } from '../../../stores/bookingStore';
 import { enterStaggered, usePress, onlyNative } from '../../../lib/motion';
 import { colors, textStyles, numericTabular } from '../../../tokens';
 import type { ServiceType, Frequency, PreferredWindow } from '../../../lib/types';
+import { SERVICE_IDS, SERVICE_LABELS, SERVICE_CATALOG } from '../../../lib/constants';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const SERVICES: { id: ServiceType; label: string; minPrice: number; maxPrice: number }[] = [
-  { id: 'lawn',      label: 'Lawn Care',             minPrice: 45,  maxPrice: 95 },
-  { id: 'cleaning',  label: 'Home Cleaning',         minPrice: 95,  maxPrice: 220 },
-  { id: 'pool',      label: 'Pool Cleaning',         minPrice: 35,  maxPrice: 65 },
-  { id: 'pest',      label: 'Pest Control',          minPrice: 85,  maxPrice: 160 },
-  { id: 'pressure',  label: 'Pressure Washing',      minPrice: 220, maxPrice: 450 },
-  { id: 'window',    label: 'Window Cleaning',       minPrice: 150, maxPrice: 320 },
-  { id: 'gutter',    label: 'Gutter Cleaning',       minPrice: 150, maxPrice: 280 },
-  { id: 'detailing', label: 'Car Detailing',         minPrice: 150, maxPrice: 400 },
-  { id: 'tree',      label: 'Tree & Plant Trimming', minPrice: 250, maxPrice: 1200 },
-  { id: 'solar',     label: 'Solar Panel Cleaning',  minPrice: 150, maxPrice: 500 },
-];
+const SERVICES: { id: ServiceType; label: string; minPrice: number; maxPrice: number }[] =
+  SERVICE_IDS.map((id) => ({
+    id,
+    label: SERVICE_LABELS[id],
+    minPrice: SERVICE_CATALOG[id].minPrice,
+    maxPrice: SERVICE_CATALOG[id].maxPrice,
+  }));
 
 const FREQS_BY_SERVICE: Record<ServiceType, { id: Frequency; label: string }[]> = {
   lawn:      [{ id: 'weekly', label: 'Weekly' }, { id: 'biweekly', label: 'Biweekly' }, { id: 'monthly', label: 'Monthly' }],

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState, Platform } from 'react-native';
 
@@ -20,6 +20,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // React Native has no `navigator.locks`, so supabase-js's default Web Locks
+    // path is unavailable; the fallback can hold the auth lock with an infinite
+    // timeout and deadlock — the documented root cause (supabase-js #1594, #2111)
+    // of the sign-in/sign-up spinner hangs. `processLock` is the supported RN lock
+    // and serializes auth calls without the deadlock.
+    lock: processLock,
   },
 });
 

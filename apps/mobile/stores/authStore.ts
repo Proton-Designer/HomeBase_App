@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session, User } from '@supabase/supabase-js';
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import { supabase, setHasSupabaseSession } from '../lib/supabase';
 import { fetchPrimaryAddress } from '../lib/api/addresses';
 import { useProviderOnboardingStore } from './providerOnboardingStore';
+import { SERVICE_IDS } from '../lib/constants';
 import type { UserRole } from '../lib/types';
 
 export interface AuthProfile {
@@ -63,18 +65,19 @@ let authSubscription: { unsubscribe: () => void } | null = null;
 let flushInFlight = false;
 let signOutInFlight = false;
 
-const VALID_SERVICE_TYPES = [
-  'lawn',
-  'cleaning',
-  'pool',
-  'pest',
-  'pressure',
-  'window',
-  'gutter',
-  'detailing',
-  'tree',
-  'solar',
-];
+// Bound any user-blocking `supabase.auth.*` call. Even with `processLock` in place
+// (which kills the auth-lock deadlock), the underlying auth fetch has no timeout of
+// its own — a stalled network leaves the promise unsettled and the caller's spinner
+// (sign-in / sign-up / verify buttons) spins forever. Race against a timeout so a
+// stall surfaces a real error the UI can show instead of hanging.
+function withTimeout<T>(p: PromiseLike<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+}
+
+const AUTH_TIMEOUT_MS = 15000;
 
 async function fetchProfile(userId: string): Promise<AuthProfile | null> {
   const { data, error } = await supabase
@@ -124,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
           });
           return;
         }
-        try {
+        const enrich = async () => {
           const profile = await fetchProfile(session.user.id);
 
           // Derive onboarding completion from the DB (the source of truth), not the
@@ -160,10 +163,26 @@ export const useAuthStore = create<AuthState>()(
             onboardingComplete,
             status: 'authenticated',
           });
+        };
+
+        try {
+          // Bound the enrichment queries: each PostgREST call above internally acquires
+          // supabase-js's auth lock to attach the access token, so if a stalled background
+          // refresh is holding that lock the query HANGS — it never throws, so the catch
+          // below never runs and the caller (sign-in button, verify screen) spins forever.
+          // This is the same auth-lock stall fixed in providers.onboard(). Race against a
+          // timeout so a stall still lands the user authenticated from session presence;
+          // the inner set() still fires if enrichment later resolves, only refining state.
+          await Promise.race([
+            enrich(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Auth enrichment timed out')), 8000),
+            ),
+          ]);
         } catch {
-          // Enrichment (profile/address/provider queries) failed transiently. Never strand
-          // the user on a blank/unauthenticated screen — mark authenticated from session
-          // presence and keep last-known role/onboarding from persisted state.
+          // Enrichment failed transiently OR timed out. Never strand the user on a
+          // blank/unauthenticated screen — mark authenticated from session presence and
+          // keep last-known role/onboarding from persisted state.
           set({ session, user: session.user, status: 'authenticated' });
         }
       };
@@ -204,7 +223,13 @@ export const useAuthStore = create<AuthState>()(
               // Token Not Found"). Validate against the server before trusting it; on any
               // auth error, purge the bad token so it can't fail on every subsequent boot.
               const { error: validateErr } = await supabase.auth.getUser();
-              if (validateErr) {
+              // Only purge on a GENUINE auth error (invalid/expired refresh token, e.g.
+              // after a project rebuild). A retryable fetch error means we're offline or
+              // the server is briefly unreachable — purging there would permanently log
+              // out a user with a perfectly valid session just because they opened the app
+              // offline (supabase-js #36906). In that case trust the persisted session and
+              // let autoRefresh recover the token once connectivity returns.
+              if (validateErr && !isAuthRetryableFetchError(validateErr)) {
                 try {
                   await supabase.auth.signOut({ scope: 'local' });
                 } catch {
@@ -241,79 +266,122 @@ export const useAuthStore = create<AuthState>()(
         },
 
         signIn: async (email, password) => {
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) return { error };
-          // Apply the session synchronously before returning so the caller can navigate
-          // immediately without racing the async onAuthStateChange listener — otherwise
-          // status is still 'unauthenticated' when index.tsx evaluates and redirects to
-          // welcome (and never recovers, since welcome doesn't re-route on auth change).
-          if (data.session) await applySession(data.session);
-          return { error: null };
+          try {
+            const { data, error } = await withTimeout(
+              supabase.auth.signInWithPassword({ email, password }),
+              AUTH_TIMEOUT_MS,
+              'Sign-in timed out — please check your connection and try again.',
+            );
+            if (error) return { error };
+            // Apply the session synchronously before returning so the caller can navigate
+            // immediately without racing the async onAuthStateChange listener — otherwise
+            // status is still 'unauthenticated' when index.tsx evaluates and redirects to
+            // welcome (and never recovers, since welcome doesn't re-route on auth change).
+            if (data.session) await applySession(data.session);
+            return { error: null };
+          } catch (e) {
+            return { error: e instanceof Error ? e : new Error('Sign-in failed') };
+          }
         },
 
         signUp: async ({ email, password, role, firstName, lastName, phone }) => {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                role,
-                first_name: firstName ?? null,
-                last_name: lastName ?? null,
-                phone: phone ?? null,
-              },
-            },
-          });
-          if (error) return { error, needsEmailConfirmation: false };
+          try {
+            const { data, error } = await withTimeout(
+              supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: {
+                    role,
+                    first_name: firstName ?? null,
+                    last_name: lastName ?? null,
+                    phone: phone ?? null,
+                  },
+                },
+              }),
+              AUTH_TIMEOUT_MS,
+              'Sign-up timed out — please check your connection and try again.',
+            );
+            if (error) return { error, needsEmailConfirmation: false };
 
-          // Confirmations OFF → signUp returns a session; apply it before the caller
-          // navigates (same race as signIn).
-          if (data.session) {
-            await applySession(data.session);
-            return { error: null, needsEmailConfirmation: false };
-          }
-
-          // Confirmations ON. Supabase obfuscates a re-signup of an existing email by
-          // returning an empty `identities` array (anti-enumeration) and does NOT send a
-          // fresh code — which strands an abandoned, unconfirmed account (it can never
-          // re-verify). Detect that case and explicitly resend the signup code.
-          const isExistingEmail = !!data.user && (data.user.identities?.length ?? 0) === 0;
-          if (isExistingEmail) {
-            const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email });
-            // A fully-confirmed account can't be issued a signup code → it truly exists.
-            // Do NOT treat rate-limit errors as "already registered": a rate-limited
-            // resend can't distinguish a confirmed account from an unconfirmed/abandoned
-            // one, and routing the latter to sign-in strands it. Rate-limited → verify.
-            if (resendErr && /confirm|registered|already/i.test(resendErr.message)) {
-              return {
-                error: new Error('This email is already registered. Please sign in instead.'),
-                needsEmailConfirmation: false,
-              };
+            // Confirmations OFF → signUp returns a session; apply it before the caller
+            // navigates (same race as signIn).
+            if (data.session) {
+              await applySession(data.session);
+              return { error: null, needsEmailConfirmation: false };
             }
-            // Otherwise (resent OK, or rate-limited with a code already in flight) → verify.
+
+            // Confirmations ON. Supabase obfuscates a re-signup of an existing email by
+            // returning an empty `identities` array (anti-enumeration) and does NOT send a
+            // fresh code — which strands an abandoned, unconfirmed account (it can never
+            // re-verify). Detect that case and explicitly resend the signup code.
+            const isExistingEmail = !!data.user && (data.user.identities?.length ?? 0) === 0;
+            if (isExistingEmail) {
+              // A resend stall must not strand the user on an error: on timeout, fall
+              // through to the verify screen (a code from signUp may already be in flight).
+              const { error: resendErr } = await withTimeout(
+                supabase.auth.resend({ type: 'signup', email }),
+                AUTH_TIMEOUT_MS,
+                'resend-timeout',
+              ).catch(() => ({ error: null }));
+              // A fully-confirmed account can't be issued a signup code → it truly exists.
+              // Do NOT treat rate-limit errors as "already registered": a rate-limited
+              // resend can't distinguish a confirmed account from an unconfirmed/abandoned
+              // one, and routing the latter to sign-in strands it. Rate-limited → verify.
+              if (resendErr && /confirm|registered|already/i.test(resendErr.message)) {
+                return {
+                  error: new Error('This email is already registered. Please sign in instead.'),
+                  needsEmailConfirmation: false,
+                };
+              }
+              // Otherwise (resent OK, or rate-limited with a code already in flight) → verify.
+            }
+            return { error: null, needsEmailConfirmation: true };
+          } catch (e) {
+            return {
+              error: e instanceof Error ? e : new Error('Sign-up failed'),
+              needsEmailConfirmation: false,
+            };
           }
-          return { error: null, needsEmailConfirmation: true };
         },
 
         verifyEmailOtp: async (email, token) => {
-          const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
-          if (error) return { error };
-          // Apply the session here so the verify screen navigates into the app with
-          // user/role/onboarding state already populated (same race as signIn).
-          if (data.session) await applySession(data.session);
-          return { error: null };
+          try {
+            const { data, error } = await withTimeout(
+              supabase.auth.verifyOtp({ email, token, type: 'signup' }),
+              AUTH_TIMEOUT_MS,
+              'Verification timed out — please check your connection and try again.',
+            );
+            if (error) return { error };
+            // Apply the session here so the verify screen navigates into the app with
+            // user/role/onboarding state already populated (same race as signIn).
+            if (data.session) await applySession(data.session);
+            return { error: null };
+          } catch (e) {
+            return { error: e instanceof Error ? e : new Error('Verification failed') };
+          }
         },
 
         resendEmailOtp: async (email) => {
-          const { error } = await supabase.auth.resend({ type: 'signup', email });
-          return { error };
+          try {
+            const { error } = await withTimeout(
+              supabase.auth.resend({ type: 'signup', email }),
+              AUTH_TIMEOUT_MS,
+              'Resend timed out — please check your connection and try again.',
+            );
+            return { error };
+          } catch (e) {
+            return { error: e instanceof Error ? e : new Error('Resend failed') };
+          }
         },
 
         signOut: async () => {
           if (signOutInFlight) return;
           signOutInFlight = true;
           try {
-            await supabase.auth.signOut();
+            // Bound it: a hung signOut (lock held / network stall) would otherwise skip
+            // the finally + local clear below and leave the user stuck "signed in".
+            await withTimeout(supabase.auth.signOut(), 8000, 'signout-timeout');
           } catch {
             // ignore — we still want to clear local state below
           } finally {
@@ -389,7 +457,7 @@ export const useAuthStore = create<AuthState>()(
             }
 
             const serviceInterestsValues = (serviceInterests ?? []).filter((s) =>
-              VALID_SERVICE_TYPES.includes(s),
+              (SERVICE_IDS as readonly string[]).includes(s),
             );
 
             const { error: hwErr } = await supabase

@@ -15,7 +15,7 @@ import Toast from 'react-native-toast-message';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { EmptyState , QueryErrorState } from '../../../components/shared';
-import { supabase } from '../../../lib/supabase';
+import { fetchProviderEarnings } from '../../../lib/api/completions';
 import { useAuthStore } from '../../../stores/authStore';
 import type { TextStyle } from 'react-native';
 import { colors, textStyles, numericTabular, shadows, fonts } from '../../../tokens';
@@ -111,28 +111,8 @@ export default function ProviderEarningsScreen() {
   const { data: earningsData, isLoading: earningsLoading, isError: earningsError, refetch: refetchEarnings } = useQuery<EarningsRow[]>({
     queryKey: ['provider', 'earnings', providerId],
     queryFn: async () => {
-      // net_cents is the real captured net (gross − the actual fee: 10% subscription /
-      // 17.5% one-off). Older rows predating the column fall back to the flat 90% estimate.
-      const { data, error } = await supabase
-        .from('completion_ledger')
-        .select('id, created_at, service_type, amount_cents, net_cents, jobs(profiles!jobs_homeowner_id_fkey(first_name))')
-        .eq('provider_id', providerId ?? '')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return (data ?? []).map((row: Record<string, unknown>) => {
-        const profile = (row.jobs as Record<string, unknown> | null)?.profiles as { first_name?: string } | null;
-        const gross = (row.amount_cents as number) ?? 0;
-        const net = (row.net_cents as number | null) ?? Math.round(gross * 0.9);
-        return {
-          id: row.id as string,
-          date: row.created_at as string,
-          service: row.service_type as string,
-          homeownerFirst: profile?.first_name ?? 'Customer',
-          netCents: net,
-          status: 'paid' as PayoutStatus,
-        };
-      });
+      const rows = await fetchProviderEarnings(providerId ?? '');
+      return rows.map((r) => ({ ...r, status: 'paid' as PayoutStatus }));
     },
     enabled: !!providerId,
   });
@@ -147,10 +127,7 @@ export default function ProviderEarningsScreen() {
   // Fetch bank account details
   const { data: bankAccount } = useQuery<BankAccount | null>({
     queryKey: ['provider', 'bank-account', providerId],
-    queryFn: async () => {
-      const result = await payments.getBankAccount();
-      return result;
-    },
+    queryFn: () => payments.getBankAccount(),
     enabled: !!providerId,
   });
 

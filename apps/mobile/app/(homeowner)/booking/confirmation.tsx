@@ -22,7 +22,7 @@ import { celebrate, onlyNative } from '../../../lib/motion';
 import { track } from '../../../lib/api/events';
 import * as api from '../../../lib/api';
 import { useQuery } from '@tanstack/react-query';
-import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
+import { SERVICE_LABELS as SERVICE_LABEL, FREQUENCY_LABELS } from '../../../lib/constants';
 import { colors, shadows, textStyles } from '../../../tokens';
 import type { ServiceType } from '../../../lib/types';
 
@@ -272,7 +272,7 @@ export default function ConfirmationStep() {
                   </Text>
                   <Text style={{ ...textStyles['body-sm'], color: colors.textSecondary }}>
                     {serviceLabel}
-                    {bookingType === 'subscription' && frequency ? ` · ${frequency}` : ''}
+                    {bookingType === 'subscription' && frequency ? ` · ${FREQUENCY_LABELS[frequency]}` : ''}
                   </Text>
                 </View>
               </View>

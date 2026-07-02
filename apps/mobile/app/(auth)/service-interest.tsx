@@ -9,6 +9,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { useBreakpoint } from '../../lib/useBreakpoint';
 import { enter } from '../../lib/motion';
 import { colors, textStyles } from '../../tokens';
+import { SERVICE_IDS, SERVICE_LABELS } from '../../lib/constants';
+import type { ServiceType } from '../../lib/types';
 
 interface ServicePill {
   id: string;
@@ -16,18 +18,14 @@ interface ServicePill {
   available: boolean;
 }
 
-const services: ServicePill[] = [
-  { id: 'lawn', label: 'Lawn Care', available: true },
-  { id: 'cleaning', label: 'Home Cleaning', available: true },
-  { id: 'pool', label: 'Pool Cleaning', available: true },
-  { id: 'pest', label: 'Pest Control', available: true },
-  { id: 'pressure', label: 'Pressure Washing', available: true },
-  { id: 'window', label: 'Window Cleaning', available: true },
-  { id: 'gutter', label: 'Gutter Cleaning', available: false },
-  { id: 'detailing', label: 'Car Detailing', available: false },
-  { id: 'tree', label: 'Tree & Plant Trimming', available: false },
-  { id: 'solar', label: 'Solar Panel Cleaning', available: false },
-];
+// Which services accept homeowner interest today. This is a homeowner-onboarding concern
+// (distinct from what providers can offer), so availability lives here, not in the catalog.
+const COMING_SOON: ServiceType[] = ['gutter', 'detailing', 'tree', 'solar'];
+const services: ServicePill[] = SERVICE_IDS.map((id) => ({
+  id,
+  label: SERVICE_LABELS[id],
+  available: !COMING_SOON.includes(id),
+}));
 
 export default function ServiceInterestScreen() {
   const router = useRouter();
@@ -60,7 +58,12 @@ export default function ServiceInterestScreen() {
     setPending({ ...pending, serviceInterests: selected });
 
     if (status === 'authenticated') {
-      const { error } = await flush();
+      let error: Error | null = null;
+      try {
+        ({ error } = await flush());
+      } catch {
+        error = new Error('save failed');
+      }
       if (error) {
         setSubmitting(false);
         Alert.alert(

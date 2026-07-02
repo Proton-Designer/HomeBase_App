@@ -5,7 +5,7 @@ import { ShieldCheck, Camera, Check, RefreshCw } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { useAuthStore } from '../../../stores/authStore';
-import { supabase } from '../../../lib/supabase';
+import { invokeFn } from '../../../lib/api/functions';
 import { pickImageFromLibrary, uploadAsset } from '../../../lib/api/storage';
 import { colors, textStyles } from '../../../tokens';
 
@@ -59,14 +59,11 @@ export default function VerificationTier1Step() {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke('verification-tier1-submit', {
-        body: {
-          userId,
-          idFrontPath: front.path,
-          idBackPath: back.path,
-        },
+      await invokeFn('verification-tier1-submit', {
+        userId,
+        idFrontPath: front.path,
+        idBackPath: back.path,
       });
-      if (error) throw error;
       setSubmitted(true);
     } catch (err: unknown) {
       Alert.alert('Submission failed', err instanceof Error ? err.message : 'Please try again.');

@@ -19,5 +19,9 @@ export default function Index() {
     return <Redirect href="/(provider)/(tabs)/today" />;
   }
   if (role === 'provider_tech') return <Redirect href="/(tech)/(tabs)/today" />;
-  return <Redirect href="/(auth)/welcome" />;
+  // Authenticated but the role hasn't resolved yet (profile enrichment in flight or a
+  // fresh sign-up whose profile row is still being created). Hold here rather than
+  // bouncing an authenticated user out to welcome — index re-renders and routes once
+  // role lands.
+  return null;
 }

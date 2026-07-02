@@ -9,11 +9,16 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Pill } from '../../../components/ui/Pill';
 import { QueryErrorState } from '../../../components/shared';
+import { TrustSummary } from '../../../components/shared/TrustSummary';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '../../../lib/api';
 import { useAuthStore } from '../../../stores/authStore';
 import { useBookingStore } from '../../../stores/bookingStore';
-import { SERVICE_LABELS } from '../../../lib/constants';
+import {
+  SERVICE_LABELS,
+  POSTING_STATUS_LABELS,
+  POSTING_STATUS_TONE,
+} from '../../../lib/constants';
 import { colors, fonts, textStyles, numericTabular } from '../../../tokens';
 
 export default function PostingDetailScreen() {
@@ -184,21 +189,9 @@ export default function PostingDetailScreen() {
               label={
                 posting.status === 'open'
                   ? `Open · ${posting.matchCount} ${posting.matchCount === 1 ? 'quote' : 'quotes'}`
-                  : posting.status === 'matched'
-                    ? 'Matched'
-                    : posting.status === 'completed'
-                      ? 'Completed'
-                      : 'Expired'
+                  : POSTING_STATUS_LABELS[posting.status]
               }
-              tone={
-                posting.status === 'open'
-                  ? 'primary'
-                  : posting.status === 'matched'
-                    ? 'success'
-                    : posting.status === 'completed'
-                      ? 'neutral'
-                      : 'warning'
-              }
+              tone={POSTING_STATUS_TONE[posting.status]}
             />
           </View>
           <Text style={{ ...textStyles['editorial-title'], color: colors.textPrimary }}>
@@ -292,11 +285,13 @@ export default function PostingDetailScreen() {
                         <ShieldCheck size={14} color={colors.success} />
                       ) : null}
                     </View>
-                    <Text style={{ ...textStyles['body-sm'], color: colors.textSecondary, marginTop: 2 }}>
-                      {(q.provider?.checkInCount ?? 0) > 0
-                        ? `Trust ${(q.provider?.overall ?? 0).toFixed(1)} · ${q.provider?.checkInCount} verified`
-                        : 'New to MyHomebase'}
-                    </Text>
+                    <View style={{ marginTop: 2 }}>
+                      <TrustSummary
+                        variant="inline"
+                        overall={q.provider?.overall}
+                        checkInCount={q.provider?.checkInCount ?? 0}
+                      />
+                    </View>
                   </View>
                   {q.amountCents != null ? (
                     <Text

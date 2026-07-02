@@ -15,23 +15,15 @@ export interface ProviderServiceAreaDraft {
   radiusMiles: number;
 }
 
-export interface ProviderAvailabilityDraft {
-  activeDays: number[];
-  start: string;
-  end: string;
-}
-
 interface ProviderOnboardingState {
   business: ProviderBusinessDetails;
   serviceArea: ProviderServiceAreaDraft;
-  availability: ProviderAvailabilityDraft;
-  /** Set once the `providers` row is created (at the availability step). */
+  /** Set once the `providers` row is created (at the service-area step). */
   providerId: string | null;
   /** Last onboarding step the user was on, so Save & exit → reopen resumes there. */
   lastStep: string;
   setBusiness: (patch: Partial<ProviderBusinessDetails>) => void;
   setServiceArea: (patch: Partial<ProviderServiceAreaDraft>) => void;
-  setAvailability: (patch: Partial<ProviderAvailabilityDraft>) => void;
   setProviderId: (id: string | null) => void;
   setLastStep: (step: string) => void;
   reset: () => void;
@@ -46,11 +38,6 @@ const makeInitial = () => ({
     phone: '',
   } as ProviderBusinessDetails,
   serviceArea: { zip: '', radiusMiles: 15 } as ProviderServiceAreaDraft,
-  availability: {
-    activeDays: [0, 1, 2, 3, 4],
-    start: '08:00',
-    end: '17:00',
-  } as ProviderAvailabilityDraft,
   providerId: null as string | null,
   lastStep: 'business' as string,
 });
@@ -65,7 +52,6 @@ export const useProviderOnboardingStore = create<ProviderOnboardingState>()(
       ...makeInitial(),
       setBusiness: (patch) => set((s) => ({ business: { ...s.business, ...patch } })),
       setServiceArea: (patch) => set((s) => ({ serviceArea: { ...s.serviceArea, ...patch } })),
-      setAvailability: (patch) => set((s) => ({ availability: { ...s.availability, ...patch } })),
       setProviderId: (providerId) => set({ providerId }),
       setLastStep: (lastStep) => set({ lastStep }),
       reset: () => set(makeInitial()),

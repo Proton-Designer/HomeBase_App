@@ -18,6 +18,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -37,6 +38,7 @@ import { TypingIndicator } from '../../../components/messaging/TypingIndicator';
 import { QuickReplyChips } from '../../../components/messaging/QuickReplyChips';
 import { NewMessagePill } from '../../../components/messaging/NewMessagePill';
 import { ThreadEmptyPanel } from '../../../components/messaging/ThreadEmptyPanel';
+import { ThreadErrorState } from '../../../components/messaging/ThreadErrorState';
 import { BottomSheetWrapper, type BottomSheetWrapperHandle } from '../../../components/shared/BottomSheetWrapper';
 import type { UserRole } from '../../../lib/types';
 
@@ -111,8 +113,19 @@ function buildListItems(
 
 // ─── Header avatar ────────────────────────────────────────────────────────────
 
-function HeaderAvatar({ name }: { name: string }) {
+function HeaderAvatar({ uri, name }: { uri: string; name: string }) {
   const initial = (name?.[0] ?? '?').toUpperCase();
+  if (uri) {
+    return (
+      <Image
+        source={{ uri }}
+        style={{ width: 32, height: 32, borderRadius: 16 }}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        accessibilityLabel={`${name}'s avatar`}
+      />
+    );
+  }
   return (
     <View
       style={{
@@ -158,8 +171,17 @@ export default function ProviderThreadScreen() {
   const otherPartyAvatarUrl = avatarUrl || '';
   const otherPartyFirstName = otherPartyName.split(' ')[0] || 'them';
 
-  const { messages, send, retry, loadOlder, isLoadingOlder, unreadDividerId, lastReadMessageId } =
-    useThreadMessages({ jobId: jobId!, fromRole });
+  const {
+    messages,
+    send,
+    retry,
+    loadOlder,
+    isLoadingOlder,
+    unreadDividerId,
+    lastReadMessageId,
+    isError,
+    refetch,
+  } = useThreadMessages({ jobId: jobId!, fromRole });
 
   const { isOtherTyping, broadcastTyping } = useTypingPresence(jobId ?? '', userId);
 
@@ -294,7 +316,9 @@ export default function ProviderThreadScreen() {
   const chatContent = (
     <>
       <View style={{ flex: 1, position: 'relative' }}>
-        {messages.length === 0 ? (
+        {isError && messages.length === 0 ? (
+          <ThreadErrorState onRetry={() => void refetch()} />
+        ) : messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'flex-start', paddingTop: 24 }}>
             <ThreadEmptyPanel
               otherPartyName={otherPartyName}
@@ -425,7 +449,7 @@ export default function ProviderThreadScreen() {
             <ChevronLeft size={24} color={colors.textPrimary} />
           </Pressable>
 
-          <HeaderAvatar name={otherPartyName} />
+          <HeaderAvatar uri={otherPartyAvatarUrl} name={otherPartyName} />
 
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>

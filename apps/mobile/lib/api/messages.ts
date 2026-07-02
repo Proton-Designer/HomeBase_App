@@ -39,6 +39,18 @@ type DbMessage = {
 
 const MESSAGE_COLS = 'id, job_id, from_user_id, from_role, body, sent_at, read_at, client_id';
 
+const AUTH_TIMEOUT_MS = 15_000;
+
+// Bound a supabase call that could otherwise hang forever — the auth lock held by a
+// stalled refresh, or a fetch that never settles on flaky mobile data. See memory
+// note supabase-await-timeout-stalls. On timeout we reject so the caller can recover.
+function withTimeout<T>(p: PromiseLike<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+}
+
 function mapMessage(r: DbMessage): Message {
   return {
     id: r.id,
@@ -68,12 +80,14 @@ export async function listForJob(jobId: string): Promise<Message[]> {
 /**
  * Keyset-paginated message fetch (§6.5).
  * - No `before`: returns most recent `limit` messages in ascending order.
- * - With `before` (a sent_at ISO string): returns messages older than that point.
+ * - With `before` (a composite {sentAt,id} cursor): returns messages strictly older
+ *   than that point. The id tiebreaker means messages that share a sent_at timestamp
+ *   at the page boundary are never silently skipped.
  * - `hasMore` is true when there are more messages before the returned window.
  */
 export async function listForJobPage(
   jobId: string,
-  options: { before?: string; limit?: number } = {},
+  options: { before?: { sentAt: string; id: string }; limit?: number } = {},
 ): Promise<{ messages: Message[]; hasMore: boolean }> {
   const { before, limit = 30 } = options;
 
@@ -82,10 +96,15 @@ export async function listForJobPage(
     .select(MESSAGE_COLS)
     .eq('job_id', jobId)
     .order('sent_at', { ascending: false })
+    .order('id', { ascending: false })
     .limit(limit + 1);
 
   if (before) {
-    query = query.lt('sent_at', before);
+    // Composite keyset: older sent_at, OR same sent_at with a lower id. Quote the
+    // timestamp so its ':' / '+' chars don't confuse the PostgREST filter parser.
+    query = query.or(
+      `sent_at.lt."${before.sentAt}",and(sent_at.eq."${before.sentAt}",id.lt.${before.id})`,
+    );
   }
 
   const { data, error } = await query;
@@ -104,22 +123,35 @@ export async function send(input: {
   fromRole: UserRole;
   clientId?: string | null;
 }): Promise<Message> {
+  // Bound both awaited calls: getSession() takes supabase-js's auth lock and the insert
+  // is a network round-trip — either can stall on flaky mobile data and leave the
+  // optimistic message stuck in 'sending' forever. On timeout we throw, which deliver()'s
+  // catch turns into 'failed' + tap-to-retry. A retry is safe: client_id dedup + the
+  // 23505 path below make a re-send idempotent even if the timed-out insert did land.
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await withTimeout(
+    supabase.auth.getSession(),
+    AUTH_TIMEOUT_MS,
+    'Sending timed out — check your connection and try again.',
+  );
   if (!session) throw new Error('not authenticated');
 
-  const { data, error } = await supabase
-    .from('messages')
-    .insert({
-      job_id: input.jobId,
-      from_user_id: session.user.id,
-      from_role: input.fromRole,
-      body: input.body.trim(),
-      client_id: input.clientId ?? null,
-    })
-    .select(MESSAGE_COLS)
-    .single();
+  const { data, error } = await withTimeout(
+    supabase
+      .from('messages')
+      .insert({
+        job_id: input.jobId,
+        from_user_id: session.user.id,
+        from_role: input.fromRole,
+        body: input.body.trim(),
+        client_id: input.clientId ?? null,
+      })
+      .select(MESSAGE_COLS)
+      .single(),
+    AUTH_TIMEOUT_MS,
+    'Sending timed out — check your connection and try again.',
+  );
 
   if (error) {
     // Idempotent retry: a unique-violation on (from_user_id, client_id) means
@@ -140,9 +172,19 @@ export async function send(input: {
 }
 
 export async function markRead(jobId: string): Promise<void> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Fire-and-forget: bound getSession() so a stalled auth lock can't leak a hanging
+  // promise. On timeout just skip — read receipts recover on the next open/refetch.
+  let session: { user: { id: string } } | null = null;
+  try {
+    const res = await withTimeout(
+      supabase.auth.getSession(),
+      10_000,
+      'markRead getSession timeout',
+    );
+    session = res.data.session;
+  } catch {
+    return;
+  }
   if (!session) return;
 
   await supabase

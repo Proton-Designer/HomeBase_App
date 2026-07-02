@@ -13,22 +13,12 @@ import { Eyebrow } from '../../../components/ui/Eyebrow';
 import { EmptyState, QueryErrorState } from '../../../components/shared';
 import { useAuthStore } from '../../../stores/authStore';
 import * as postingsApi from '../../../lib/api/postings';
-import { SERVICE_LABELS } from '../../../lib/constants';
+import {
+  SERVICE_LABELS,
+  POSTING_STATUS_LABELS,
+  POSTING_STATUS_TONE,
+} from '../../../lib/constants';
 import { colors, textStyles, numericTabular } from '../../../tokens';
-import type { PostingStatus } from '../../../lib/types';
-
-const STATUS_TONE: Record<PostingStatus, 'primary' | 'success' | 'neutral' | 'warning'> = {
-  open: 'primary',
-  matched: 'success',
-  completed: 'neutral',
-  expired: 'warning',
-};
-const STATUS_LABEL: Record<PostingStatus, string> = {
-  open: 'Open · awaiting quotes',
-  matched: 'Matched',
-  completed: 'Completed',
-  expired: 'Expired',
-};
 
 export default function PostingsListScreen() {
   const router = useRouter();
@@ -143,7 +133,14 @@ export default function PostingsListScreen() {
                   <View style={{ flex: 1, gap: 6 }}>
                     <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                       <Pill label={SERVICE_LABELS[p.serviceType]} tone="primary" />
-                      <Pill label={STATUS_LABEL[p.status]} tone={STATUS_TONE[p.status]} />
+                      <Pill
+                        label={
+                          p.status === 'open'
+                            ? 'Open · awaiting quotes'
+                            : POSTING_STATUS_LABELS[p.status]
+                        }
+                        tone={POSTING_STATUS_TONE[p.status]}
+                      />
                     </View>
                     <Text
                       style={{

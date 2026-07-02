@@ -10,21 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeBack } from '../../../lib/useSafeBack';
-import {
-  ChevronLeft,
-  MapPin,
-  MessageCircle,
-  Leaf,
-  Sparkles,
-  Waves,
-  Bug,
-  Droplets,
-  SquareDashedBottom as SquareDashed,
-  CloudRain,
-  Car,
-  TreeDeciduous,
-  Sun,
-} from 'lucide-react-native';
+import { ChevronLeft, MapPin, MessageCircle } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
 import { useQuery } from '@tanstack/react-query';
 import { TrustSummary } from '../../../components/shared/TrustSummary';
@@ -39,24 +25,8 @@ import { track } from '../../../lib/api/events';
 import { useBookingStore } from '../../../stores/bookingStore';
 import { colors, numericTabular, shadows, textStyles } from '../../../tokens';
 import { enter } from '../../../lib/motion';
-import { SERVICE_LABELS as SERVICE_LABEL } from '../../../lib/constants';
+import { SERVICE_LABELS as SERVICE_LABEL, SERVICE_ICONS } from '../../../lib/constants';
 import type { ServiceType } from '../../../lib/types';
-
-const SERVICE_ICON: Record<
-  ServiceType,
-  React.ComponentType<{ size?: number; color?: string }>
-> = {
-  lawn: Leaf,
-  cleaning: Sparkles,
-  pool: Waves,
-  pest: Bug,
-  pressure: Droplets,
-  window: SquareDashed,
-  gutter: CloudRain,
-  detailing: Car,
-  tree: TreeDeciduous,
-  solar: Sun,
-};
 
 function buildTagline(provider: {
   serviceTypes: ServiceType[];
@@ -448,7 +418,7 @@ export default function ProviderDetailScreen() {
                 </Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {provider.serviceTypes.map((svc) => {
-                    const Icon = SERVICE_ICON[svc];
+                    const Icon = SERVICE_ICONS[svc];
                     return (
                       <View
                         key={svc}

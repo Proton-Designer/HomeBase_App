@@ -64,6 +64,16 @@ export const POSTING_STATUS_LABELS: Record<PostingStatus, string> = {
   expired: 'Expired',
 };
 
+export const POSTING_STATUS_TONE: Record<
+  PostingStatus,
+  'primary' | 'success' | 'neutral' | 'warning'
+> = {
+  open: 'primary',
+  matched: 'success',
+  completed: 'neutral',
+  expired: 'warning',
+};
+
 export const INCIDENT_TYPE_LABELS: Record<IncidentType, string> = {
   property_damage: 'Property damage',
   theft: 'Theft',

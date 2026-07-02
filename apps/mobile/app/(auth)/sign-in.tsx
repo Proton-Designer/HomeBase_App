@@ -37,8 +37,15 @@ export default function SignInScreen() {
 
   const onSubmit = async (values: FormValues) => {
     setSubmitError(null);
-    const { error } = await signIn(values.email, values.password);
+    const email = values.email.toLowerCase();
+    const { error } = await signIn(email, values.password);
     if (error) {
+      // An unconfirmed account can't sign in — don't dead-end on the error, send the
+      // user to verify their email (where they can enter or resend the code).
+      if (/email not confirmed|not confirmed/i.test(error.message)) {
+        router.push({ pathname: '/(auth)/verify-email', params: { email } });
+        return;
+      }
       setSubmitError(error.message);
       return;
     }

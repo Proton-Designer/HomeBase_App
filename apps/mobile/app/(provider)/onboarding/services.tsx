@@ -1,23 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import {
-  Check,
-  Search,
-  Leaf,
-  TreeDeciduous,
-  Waves,
-  Droplets,
-  CloudRain,
-  SquareDashedBottom as SquareDashed,
-  Sun,
-  Sparkles,
-  Bug,
-  Car,
-} from 'lucide-react-native';
+import { Check, Search } from 'lucide-react-native';
 import { Button } from '../../../components/ui/Button';
 import { colors, textStyles, serviceTints } from '../../../tokens';
 import { useProviderOnboardingStore } from '../../../stores/providerOnboardingStore';
+import { SERVICE_LABELS, SERVICE_ICONS } from '../../../lib/constants';
+import type { ServiceType } from '../../../lib/types';
 
 interface ServiceOption {
   id: string;
@@ -27,18 +16,15 @@ interface ServiceOption {
 }
 
 // Ordered so related verticals sit together: greenery → exterior surfaces → interior → other.
-const SERVICES: ServiceOption[] = [
-  { id: 'lawn', label: 'Lawn Care', Icon: Leaf, tint: serviceTints.lawn },
-  { id: 'tree', label: 'Tree & Plant Trimming', Icon: TreeDeciduous, tint: serviceTints.tree },
-  { id: 'pool', label: 'Pool Cleaning', Icon: Waves, tint: serviceTints.pool },
-  { id: 'pressure', label: 'Pressure Washing', Icon: Droplets, tint: serviceTints.pressure },
-  { id: 'gutter', label: 'Gutter Cleaning', Icon: CloudRain, tint: serviceTints.gutter },
-  { id: 'window', label: 'Window Cleaning', Icon: SquareDashed, tint: serviceTints.window },
-  { id: 'solar', label: 'Solar Panel Cleaning', Icon: Sun, tint: serviceTints.solar },
-  { id: 'cleaning', label: 'Home Cleaning', Icon: Sparkles, tint: serviceTints.cleaning },
-  { id: 'pest', label: 'Pest Control', Icon: Bug, tint: serviceTints.pest },
-  { id: 'detailing', label: 'Car Detailing', Icon: Car, tint: serviceTints.detailing },
+const SERVICE_ORDER: ServiceType[] = [
+  'lawn', 'tree', 'pool', 'pressure', 'gutter', 'window', 'solar', 'cleaning', 'pest', 'detailing',
 ];
+const SERVICES: ServiceOption[] = SERVICE_ORDER.map((id) => ({
+  id,
+  label: SERVICE_LABELS[id],
+  Icon: SERVICE_ICONS[id],
+  tint: serviceTints[id],
+}));
 
 export default function ServicesStep() {
   const router = useRouter();

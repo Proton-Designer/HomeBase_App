@@ -118,40 +118,27 @@ export async function submitProviderCheckIn(input: {
 export async function detail(id: string): Promise<Job | null> {
   const { data, error } = await supabase
     .from('jobs')
-    .select(`
-      *,
-      bookings (
-        addresses ( street, city, state, zip, neighborhood )
-      ),
-      providers ( display_name, avatar_url, composite_score_overall )
-    `)
+    .select(JOB_LIST_SELECT)
     .eq('id', id)
     .single();
   if (error) throw error;
-  const r = data as unknown as Record<string, unknown>;
-  const booking = (r.bookings as { addresses?: RawAddress | null } | null) ?? null;
-  const addr = booking?.addresses ?? null;
-  const prov =
-    (r.providers as {
-      display_name?: string | null;
-      avatar_url?: string | null;
-      composite_score_overall?: number | null;
-    } | null) ?? null;
-  return {
-    id: r.id as string,
-    bookingId: r.booking_id as string,
-    providerId: r.provider_id as string,
-    providerName: prov?.display_name ?? 'Provider',
-    providerAvatarUrl: prov?.avatar_url ?? null,
-    providerScore: prov?.composite_score_overall ?? null,
-    homeownerId: r.homeowner_id as string,
-    addressFormatted: buildAddressFormatted(addr),
-    addressZip: addr?.zip ?? null,
-    status: r.status as JobStatus,
-    serviceType: r.service_type as ServiceType,
-    scheduledAt: r.scheduled_at as string,
-    amountCents: r.amount_cents as number,
-    timestamps: (r.timestamps as Job['timestamps']) ?? {},
-    assignedTechId: (r.assigned_tech_id as string | null) ?? null,
-  };
+  return mapJobListRow(data);
+}
+
+/** Jobs for a provider within a date range (excludes completed/cancelled). */
+export async function listForProviderInRange(
+  providerId: string,
+  from: string,
+  to: string,
+): Promise<Job[]> {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select(JOB_LIST_SELECT)
+    .eq('provider_id', providerId)
+    .gte('scheduled_at', from)
+    .lte('scheduled_at', to)
+    .in('status', ['booked', 'confirmed', 'en_route', 'in_progress'])
+    .order('scheduled_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapJobListRow);
 }

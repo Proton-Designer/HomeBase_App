@@ -17,10 +17,14 @@ function openChannel(
   name: string,
   bind: (channel: RealtimeChannel) => RealtimeChannel,
   onError?: (err: unknown) => void,
+  onConnect?: () => void,
 ) {
   channelSeq += 1;
-  const channel = bind(supabase.channel(`${name}#${channelSeq}`)).subscribe((_status, err) => {
+  const channel = bind(supabase.channel(`${name}#${channelSeq}`)).subscribe((status, err) => {
     if (err) onError?.(err);
+    // Fires on the initial handshake AND on every reconnect after a network drop —
+    // the hook uses this to refetch anything missed while the channel was down.
+    if (status === 'SUBSCRIBED') onConnect?.();
   });
   return () => {
     supabase.removeChannel(channel);
@@ -59,6 +63,7 @@ export function subscribeToMessages(
   jobId: string,
   onMessage: MessageListener,
   onReadReceipt?: ReadReceiptListener,
+  onConnect?: () => void,
 ) {
   try {
     return openChannel(
@@ -111,6 +116,7 @@ export function subscribeToMessages(
           err,
         );
       },
+      onConnect,
     );
   } catch (err) {
     // eslint-disable-next-line no-console

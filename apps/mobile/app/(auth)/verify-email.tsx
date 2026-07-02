@@ -73,9 +73,16 @@ export default function VerifyEmailScreen() {
       setSubmitError(error.message);
       return;
     }
-    router.replace(
-      role === 'provider_owner' ? '/(provider)/onboarding/business' : '/(auth)/address-setup'
-    );
+    // With a role (came from sign-up) route straight into the right onboarding. Without
+    // one (came from sign-in's "email not confirmed" hop) defer to index, which routes
+    // by the now-resolved role + onboarding state instead of assuming homeowner.
+    if (role === 'provider_owner') {
+      router.replace('/(provider)/onboarding/business');
+    } else if (role === 'homeowner') {
+      router.replace('/(auth)/address-setup');
+    } else {
+      router.replace('/');
+    }
   };
 
   const onResend = async () => {
@@ -83,13 +90,18 @@ export default function VerifyEmailScreen() {
     setResending(true);
     setSubmitError(null);
     setResendNote(null);
-    const { error } = await resendEmailOtp(email);
-    setResending(false);
-    if (error) {
-      setResendNote(error.message);
-    } else {
-      setResendNote('New code sent — check your email (and spam).');
-      setCooldown(45);
+    try {
+      const { error } = await resendEmailOtp(email);
+      if (error) {
+        setResendNote(error.message);
+      } else {
+        setResendNote('New code sent — check your email (and spam).');
+        setCooldown(45);
+      }
+    } catch {
+      setResendNote('Could not resend the code. Check your connection and try again.');
+    } finally {
+      setResending(false);
     }
   };
 

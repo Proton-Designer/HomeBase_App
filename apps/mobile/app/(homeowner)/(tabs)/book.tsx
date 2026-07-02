@@ -1,23 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, ScrollView, Platform, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import {
-  Leaf,
-  Sparkles,
-  Waves,
-  Bug,
-  Droplets,
-  SquareDashedBottom as SquareDashed,
-  CloudRain,
-  Car,
-  TreeDeciduous,
-  Sun,
-  PenLine,
-  ChevronRight,
-  Search,
-  X,
-  SearchX,
-} from 'lucide-react-native';
+import { PenLine, ChevronRight, Search, X, SearchX } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Section } from '../../../components/ui/Section';
@@ -36,6 +20,13 @@ import { track } from '../../../lib/api/events';
 import { colors, serviceTints, shadows, textStyles, numericTabular } from '../../../tokens';
 import { useBreakpoint } from '../../../lib/useBreakpoint';
 import { enter, enterStaggered, usePress } from '../../../lib/motion';
+import {
+  SERVICE_LABELS,
+  SERVICE_IDS,
+  SERVICE_ICONS,
+  SERVICE_CATALOG,
+  serviceFromPriceLabel,
+} from '../../../lib/constants';
 import type { ServiceType } from '../../../lib/types';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -48,49 +39,15 @@ type ServiceDef = {
   id: ServiceType;
   title: string;
   subtitle: string;
-  price: string;
   Icon: React.ComponentType<{ size?: number; color?: string }>;
 };
 
-const SERVICES: ServiceDef[] = [
-  { id: 'lawn',      title: 'Lawn Care',             subtitle: 'Mowing, edging, trimming',           price: 'From $45/visit',  Icon: Leaf },
-  { id: 'cleaning',  title: 'Home Cleaning',         subtitle: 'Standard, deep clean, move-in/out',  price: 'From $80/visit',  Icon: Sparkles },
-  { id: 'pool',      title: 'Pool Cleaning',         subtitle: 'Weekly skim, chem-balance, filter',  price: 'From $35/visit',  Icon: Waves },
-  { id: 'pest',      title: 'Pest Control',          subtitle: 'Quarterly perimeter & interior',     price: 'From $85/visit',  Icon: Bug },
-  { id: 'pressure',  title: 'Pressure Washing',      subtitle: 'Siding, drives, fences, decks',      price: 'From $220/job',   Icon: Droplets },
-  { id: 'window',    title: 'Window Cleaning',       subtitle: 'Interior + exterior, screens incl.', price: 'From $150/visit', Icon: SquareDashed },
-  { id: 'gutter',    title: 'Gutter Cleaning',       subtitle: 'Spring + fall clear-outs',           price: 'From $150/visit', Icon: CloudRain },
-  { id: 'detailing', title: 'Car Detailing',         subtitle: 'Mobile interior + exterior',         price: 'From $150/visit', Icon: Car },
-  { id: 'tree',      title: 'Tree & Plant Trimming', subtitle: 'Trim, shape, hazard removal',        price: 'From $250/job',   Icon: TreeDeciduous },
-  { id: 'solar',     title: 'Solar Panel Cleaning',  subtitle: 'Soft-bristle, DI-water rinse',       price: 'From $150/visit', Icon: Sun },
-];
-
-// HARDCODED FALLBACK — replace once providers table is seeded in production
-const PRICE_FALLBACK: Record<ServiceType, string> = {
-  lawn: 'From $45/visit',
-  cleaning: 'From $80/visit',
-  pool: 'From $35/visit',
-  pest: 'From $85/visit',
-  pressure: 'From $220/job',
-  window: 'From $150/visit',
-  gutter: 'From $150/visit',
-  detailing: 'From $150/visit',
-  tree: 'From $250/job',
-  solar: 'From $150/visit',
-};
-
-const PRICE_UNIT: Record<ServiceType, '/visit' | '/job'> = {
-  lawn: '/visit',
-  cleaning: '/visit',
-  pool: '/visit',
-  pest: '/visit',
-  pressure: '/job',
-  window: '/visit',
-  gutter: '/visit',
-  detailing: '/visit',
-  tree: '/job',
-  solar: '/visit',
-};
+const SERVICES: ServiceDef[] = SERVICE_IDS.map((id) => ({
+  id,
+  title: SERVICE_LABELS[id],
+  subtitle: SERVICE_CATALOG[id].subtitle,
+  Icon: SERVICE_ICONS[id],
+}));
 
 function priceLabel(
   id: ServiceType,
@@ -99,16 +56,9 @@ function priceLabel(
 ): string | null {
   if (loading) return null; // null = render skeleton shimmer in ServiceCard
   const cents = floors[id];
-  if (!cents || cents <= 0) return PRICE_FALLBACK[id]; // hardcoded fallback when no local data
-  return `From $${Math.round(cents / 100)}${PRICE_UNIT[id]}`;
+  if (!cents || cents <= 0) return serviceFromPriceLabel(id); // fallback when no local floor
+  return `From $${Math.round(cents / 100)}${SERVICE_CATALOG[id].unit}`;
 }
-
-// Stable icon lookup for posting chips — maps service type to the icon from SERVICES
-const SERVICE_ICON_MAP: Record<ServiceType, React.ComponentType<{ size?: number; color?: string }>> =
-  Object.fromEntries(SERVICES.map((s) => [s.id, s.Icon])) as Record<
-    ServiceType,
-    React.ComponentType<{ size?: number; color?: string }>
-  >;
 
 export default function BookEntryScreen() {
   const router = useRouter();
@@ -304,7 +254,7 @@ export default function BookEntryScreen() {
                       <PostingChip
                         key={posting.id}
                         posting={posting}
-                        serviceIcon={SERVICE_ICON_MAP[posting.serviceType] ?? Leaf}
+                        serviceIcon={SERVICE_ICONS[posting.serviceType] ?? SERVICE_ICONS.lawn}
                         onPress={() => router.push('/(homeowner)/postings')}
                       />
                     ))}
